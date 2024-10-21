@@ -28,11 +28,9 @@ async def startup():
 # Main webhook url for telegram bot
 @app.post("/gateway")
 async def webhook(request: Request):
-    TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-    TELEGRAM_API_URL = os.getenv("TELEGRAM_API_URL")
-    TELEGRAM_URL = f'{TELEGRAM_API_URL}{TELEGRAM_BOT_TOKEN}'
 
     payload = await request.json()
+    logging.info(payload)
     chat_id = payload['message']['chat']['id']
     text = payload['message']['text']
 
