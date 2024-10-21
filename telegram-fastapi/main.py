@@ -1,28 +1,37 @@
-import json
-import os
 import httpx
+import os
+from api import execute_url
 from fastapi import FastAPI, Request
 from dotenv import load_dotenv
 
+
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
 load_dotenv()
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_API_URL = f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}'
 app = FastAPI()
-client = httpx.AsyncClient()
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+# Links telegram bot to main webhook url
+@app.on_event("startup")
+async def startup():
+    logging.info("Re-initialising webhook")
+    WEBHOOK = os.getenv("WEBHOOK_URL")
+    params = {
+        'url': WEBHOOK
+        }
+    await execute_url("setWebhook", params=params)
 
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int):
-    return {"item_id": item_id}
 
-# Define the webhook endpoint
-@app.post("/webhook")
+# Main webhook url for telegram bot
+@app.post("/gateway")
 async def webhook(request: Request):
-    # Get the request body as JSON
+    TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+    TELEGRAM_API_URL = os.getenv("TELEGRAM_API_URL")
+    TELEGRAM_URL = f'{TELEGRAM_API_URL}{TELEGRAM_BOT_TOKEN}'
+
     payload = await request.json()
     chat_id = payload['message']['chat']['id']
     text = payload['message']['text']
@@ -31,6 +40,12 @@ async def webhook(request: Request):
         'chat_id': chat_id,
         'text': text
         }
-    await client.post(f"{TELEGRAM_API_URL}/sendMessage", json=response_payload)
 
-    return {"status": "success", "message": "Webhook received successfully"}
+    with httpx.Client() as client:
+        try:
+            r = await execute_url("sendMessage", json=response_payload)
+            logging.info(f'SendMessage response: {r}')
+        except:
+            logging.info(f'Error in sending response...')
+
+
