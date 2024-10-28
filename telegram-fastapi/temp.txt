@@ -1,0 +1,61 @@
+import httpx
+import os
+from dotenv import load_dotenv
+import azure.functions as func
+import logging
+
+app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
+
+@app.route(route="processTelegramMessage", auth_level=func.AuthLevel.ANONYMOUS)
+async def processTelegramMessage(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request.')
+
+    text = "TELEGRAM WEBHOOK TO AZURE SUCCESS"
+    payload = await req.json()
+    logging.info(payload)
+    chat_id = payload['message']['chat']['id']
+    text = payload['message']['text']
+
+    if not text:
+        try:
+            req_body = req.get_json()
+        except ValueError:
+            pass
+        else:
+            text = req_body.get('name')
+
+    response_payload = {
+        'chat_id': chat_id,
+        'text': text
+        }
+    
+    if text:
+        
+        try:
+            response = await execute_url("sendMessage", json=response_payload)
+            logging.info(f'SendMessage response: {response}')
+        except:
+            logging.info(f'Error in sending response...')
+        return func.HttpResponse(
+             f"This HTTP triggered function executed successfully, text is {text}"
+        )
+    else:
+        return func.HttpResponse(
+             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
+             status_code=200
+        )
+
+async def execute_url(method, params="", json=""):
+    with httpx.Client() as client:
+        URL = os.getenv("TELEGRAM_API_URL")
+        TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
+        try:
+            response = client.post(f'{URL}{TOKEN}/{method}', params=params, json=json)
+            logging.info(f"executing {method}: {response}")
+            return response
+        except:
+            print(f'Error in executing {method}')
+
+
+    

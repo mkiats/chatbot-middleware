@@ -1,5 +1,4 @@
 import os
-from dotenv import load_dotenv
 import httpx
 import logging
 
@@ -9,8 +8,8 @@ async def execute_url(method, params="", json=""):
         TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
         try:
-            r = client.post(f'{URL}{TOKEN}/{method}', params=params, json=json)
+            response = client.post(f'{URL}{TOKEN}/{method}', params=params, json=json)
             logging.info(f"executing {method}: {r}")
-            return r
+            return response
         except:
             print(f'Error in executing {method}')

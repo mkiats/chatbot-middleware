@@ -1,3 +1,6 @@
 *.env
 
-venv-telegram
+venv-fastapi
+.python_packages
+__pycache__
+.venv

@@ -1,8 +1,7 @@
 import httpx
 import os
-from api import execute_url
 from fastapi import FastAPI, Request
-from dotenv import load_dotenv
+from api import execute_url
 
 
 import logging
@@ -10,6 +9,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
+from dotenv import load_dotenv
 load_dotenv()
 app = FastAPI()
 
