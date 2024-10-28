@@ -12,19 +12,10 @@ load_dotenv()
 async def processTelegramMessage(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
-    text = "TELEGRAM WEBHOOK TO AZURE SUCCESS"
-    payload = await req.json()
+    payload = req.get_json()
     logging.info(payload)
     chat_id = payload['message']['chat']['id']
     text = payload['message']['text']
-
-    if not text:
-        try:
-            req_body = req.get_json()
-        except ValueError:
-            pass
-        else:
-            text = req_body.get('name')
 
     response_payload = {
         'chat_id': chat_id,
@@ -32,22 +23,21 @@ async def processTelegramMessage(req: func.HttpRequest) -> func.HttpResponse:
         }
     
     if text:
-        
         try:
             response = await execute_url("sendMessage", json=response_payload)
-            logging.info(f'SendMessage response: {response}')
+            logging.info(f'SendMessage response: {response_payload}')
+            return func.HttpResponse(
+             f"This HTTP triggered function executed successfully, text is {text}", 
+             status_code=200
+            )
         except:
             logging.info(f'Error in sending response...')
-        return func.HttpResponse(
-             f"This HTTP triggered function executed successfully, text is {text}"
-        )
     else:
         return func.HttpResponse(
              "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
              status_code=200
         )
     
-
 async def execute_url(method, params="", json=""):
     with httpx.Client() as client:
         URL = os.getenv("TELEGRAM_API_URL")
@@ -59,3 +49,24 @@ async def execute_url(method, params="", json=""):
             return response
         except:
             print(f'Error in executing {method}')
+
+@app.route(route="processTempMessage", auth_level=func.AuthLevel.ANONYMOUS)
+def processTempMessage(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Python HTTP trigger function processed a request.')
+
+    name = req.params.get('name')
+    if not name:
+        try:
+            req_body = req.get_json()
+        except ValueError:
+            pass
+        else:
+            name = req_body.get('name')
+
+    if name:
+        return func.HttpResponse(f"Hello, {name}. This HTTP triggered function executed successfully.")
+    else:
+        return func.HttpResponse(
+             "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
+             status_code=200
+        )

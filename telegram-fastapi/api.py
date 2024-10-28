@@ -9,7 +9,7 @@ async def execute_url(method, params="", json=""):
 
         try:
             response = client.post(f'{URL}{TOKEN}/{method}', params=params, json=json)
-            logging.info(f"executing {method}: {r}")
+            logging.info(f"executing {method}: {response}")
             return response
         except:
             print(f'Error in executing {method}')
