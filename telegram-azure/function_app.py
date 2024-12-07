@@ -1,13 +1,23 @@
 import azure.functions as func
+from azure.cosmos import CosmosClient, PartitionKey
+from azure.identity import DefaultAzureCredential
 import logging
 import os
 import httpx
 import json
 from dotenv import load_dotenv
+from entities import callback_data_chatbot, inline_keyboard_button
 # from api import start_command, list_command
 
-app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 load_dotenv()
+app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
+credentials = DefaultAzureCredential()
+client = CosmosClient.from_connection_string(os.getenv("COSMOS_DB_CONNECTION_STRING"))
+user_database = client.create_database_if_not_exists("UserDB")
+user_container = user_database.create_container_if_not_exists(id="users", partition_key=PartitionKey(path="/user_uuid"))
+chatbot_database = client.create_database_if_not_exists("ChatbotDB")
+chatbot_container = chatbot_database.create_container_if_not_exists(id="chatbots", partition_key=PartitionKey(path="/chatbot_uuid"))
+
 
 
 @app.route(route="processTelegramMessage")
@@ -113,14 +123,6 @@ async def list_command(chat_id: str) -> None:
     pass
 
 
-
-def inline_keyboard_button(text: str, callback_data: str = None) -> object:
-    json_obj = {
-        'text': text,
-        'callback_data': text
-    }
-
-    return json_obj
 
 def destructure_json_response(json_request: str) -> [str]:
     message = json_request.get('message', None)
