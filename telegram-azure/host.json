@@ -6,6 +6,13 @@
         "isEnabled": true,
         "excludedTypes": "Request"
       }
+    },
+    "logLevel": {
+      "azure.cosmos": "Error",
+      "default": "Warning",
+      "Host.Results": "Warning",
+      "Function": "Warning",
+      "Host.Aggregator": "Error"
     }
   },
   "extensionBundle": {
