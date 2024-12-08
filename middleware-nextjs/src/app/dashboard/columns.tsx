@@ -15,13 +15,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-export type Chatbot = {
-	id: string;
-	name: string;
-	status: 'active' | 'inactive' | 'deprecated' | 'debug';
-	endpoint: string;
-};
+import { Chatbot } from '@/lib/entities';
 
 export const columns: ColumnDef<Chatbot>[] = [
 	{
