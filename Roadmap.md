@@ -1,3 +1,9 @@
+# NextJs GUI
+- install shadcn
+- install react-query
+
+
+# Azure Telegram
 Need to change partition key to something index-able, instead of uuid
 - ChatbotDb maybe can partition by status
 
