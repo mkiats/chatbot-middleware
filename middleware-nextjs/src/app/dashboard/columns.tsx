@@ -19,7 +19,7 @@ import {
 export type Chatbot = {
 	id: string;
 	name: string;
-	status: 'active' | 'inactive' | 'terminated' | 'failed';
+	status: 'active' | 'inactive' | 'deprecated' | 'debug';
 	endpoint: string;
 };
 

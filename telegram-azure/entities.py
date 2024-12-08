@@ -39,7 +39,8 @@ class ChatbotCallbackData:
 
 class Chatbot:
     def __init__(self, chatbot_uuid: str, chatbot_name: str, chatbot_endpoint: str, chatbot_status: str):
-        self.chatbot_uuid = chatbot_uuid
+        self.chatbot_uuid = str(chatbot_uuid) if chatbot_uuid != "" else str(uuid4())
+        self.id = str(self.chatbot_uuid)
         self.chatbot_name = chatbot_name
         self.chatbot_endpoint = chatbot_endpoint
         self.chatbot_status = chatbot_status
@@ -51,18 +52,24 @@ class Chatbot:
         # Populate with custom error exceptions, throw customException when necessary
         # Need to handle chatbot_uuid should be UUID format, endpoint needs to be valid
             
-        if self.status not in ['active', 'maintenance', 'deprecated', 'debug']:
-            raise ValueError("status must be one of: active, maintenance, deprecated, debug")
+        if self.chatbot_status not in ['active', 'inactive', 'deprecated', 'debug']:
+            raise ValueError("status must be one of: active, inactive, deprecated, debug")
             
         return True
     
     def to_dict(self) -> dict:
         return {
+            "id": self.id,
             "chatbot_uuid": self.chatbot_uuid,
             "chatbot_name": self.chatbot_name,
             "chatbot_endpoint": self.chatbot_endpoint,
             "chatbot_status": self.chatbot_status
         }
+    
+    def set_status(self, new_status: str):
+        self.chatbot_status = new_status
+        self.validate()
+
     
 class inline_keyboard_button:
     def __init__(self, text: str, callback_data: str = None):

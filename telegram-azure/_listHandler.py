@@ -13,7 +13,7 @@ async def command_telegram_list(chat_id: str, container: ContainerProxy) -> Http
 
     # Query active chatbot in Cosmos DB
     # TODO: Change to 'active' during deployment
-    query = "SELECT * FROM c WHERE c.status = 'active'"
+    query = "SELECT * FROM c WHERE c.chatbot_status = 'active'"
     results = await query_by_sql(container=container, queryStr=query)
 
     chatbots = list()
