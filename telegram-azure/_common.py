@@ -3,6 +3,7 @@ from typing import Tuple
 import logging
 import os
 import httpx
+import json
 
 def _parse_payload(payload: dict) -> Tuple[dict, str, str, dict, str]:
     message = payload.get('message', {})
@@ -55,6 +56,24 @@ async def _execute_url(method, params="", json="") -> HttpResponse:
                                 mimetype="text/plain",
                                 status_code=500)
         
+
+async def _query_chatbot(chatbot_endpoint: str, user_query: str) -> HttpResponse:
+    logging.warning("Executing _query_chatbot...")
+    async with httpx.AsyncClient() as client:
+        try:
+            request_payload = {
+                'text': user_query
+                }
+            response = await client.post(f'{chatbot_endpoint}', json=request_payload)
+            return HttpResponse(body=json.dumps(response.text), 
+                                mimetype="application/json",
+                                status_code=200)
+        except Exception as e:
+            logging.error(f"Error executing _query_chatbot: {str(e)}")
+            return HttpResponse(str(e), 
+                                mimetype="text/plain",
+                                status_code=500)
+
 
 async def _echo_message(chat_id: str, text: str) -> HttpResponse:
     response_payload = {

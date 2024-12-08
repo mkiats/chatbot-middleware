@@ -2,6 +2,7 @@ from _common import _execute_url
 from entities import ChatbotCallbackData, inline_keyboard_button
 from azure.functions import HttpResponse
 from azure.cosmos import ContainerProxy
+from cosmos import query_by_sql
 import logging
 import json
 
@@ -11,8 +12,9 @@ async def command_telegram_list(chat_id: str, container: ContainerProxy) -> Http
     logging.warning("Executing command_telegram_list...")
 
     # Query active chatbot in Cosmos DB
+    # TODO: Change to 'active' during deployment
     query = "SELECT * FROM c WHERE c.status = 'active'"
-    results = container.query_items(query=query, enable_cross_partition_query=True)
+    results = await query_by_sql(container=container, queryStr=query)
 
     chatbots = list()
     for chatbot in results:

@@ -9,7 +9,7 @@
     },
     "logLevel": {
       "azure.cosmos": "Error",
-      "default": "Warning",
+      "default": "Information",
       "Host.Results": "Warning",
       "Function": "Warning",
       "Host.Aggregator": "Error"

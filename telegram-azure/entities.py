@@ -13,7 +13,7 @@ import re
 
 class User:
     def __init__(self, user_uuid: str, selected_chatbot: str, updated_at: str):
-        self.user_uuid = user_uuid if user_uuid != "" else str(uuid4())
+        self.user_uuid = str(user_uuid) if user_uuid != "" else str(uuid4())
         self.id = str(self.user_uuid)
         self.selected_chatbot = selected_chatbot
         self.updated_at = updated_at if updated_at != "" else int(time.time())
@@ -22,7 +22,7 @@ class User:
     def to_dict(self) -> dict:
         return {
             "id": str(self.id),
-            "user_uuid": self.user_uuid,
+            "user_uuid": str(self.user_uuid),
             "selected_chatbot": self.selected_chatbot,
             "updated_at": self.updated_at
         }
@@ -51,8 +51,8 @@ class Chatbot:
         # Populate with custom error exceptions, throw customException when necessary
         # Need to handle chatbot_uuid should be UUID format, endpoint needs to be valid
             
-        if self.status not in ['active', 'maintenance', 'deprecated']:
-            raise ValueError("status must be one of: active, maintenance, deprecated")
+        if self.status not in ['active', 'maintenance', 'deprecated', 'debug']:
+            raise ValueError("status must be one of: active, maintenance, deprecated, debug")
             
         return True
     
