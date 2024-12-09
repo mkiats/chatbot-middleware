@@ -7,11 +7,13 @@
 Need to change partition key to something index-able, instead of uuid
 - ChatbotDb maybe can partition by status
 - Pagination for /list command
+- Exception handling
 
 # Azure GUI Deployment
 - Create exceptions to handle custom errors
 - Find way to authenticate without using 'az login', Can try EnvironmentalCredentials
 - Deployment fails when using in the cloud, suspect authentication issue with the DefaultCredentials
+- Chatbot deployed should be added to CosmosDb
 
 
 Users
