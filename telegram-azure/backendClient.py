@@ -33,8 +33,7 @@ class BackendClient:
         await db.initialize()
         try:
             # Get chatbot_uuid
-            chatbot_uuid = req.route_params.get('chatbot_uuid')
-            logging.warning(chatbot_uuid)
+            chatbot_uuid = req.params.get('chatbot_uuid')
             if not chatbot_uuid:
                 return HttpResponse(
                     body="Missing chatbot ID",
@@ -44,7 +43,6 @@ class BackendClient:
             
             # Get chatbot
             the_chatbot = await query_by_key(container=db.chatbot_container, key=chatbot_uuid)
-            logging.warning(the_chatbot)
             if not the_chatbot:
                 return HttpResponse(
                     body="Invalid Chatbot ID",
@@ -56,9 +54,6 @@ class BackendClient:
             the_chatbot_name = the_chatbot[0].get("chatbot_name")
             the_chatbot_status = the_chatbot[0].get("chatbot_status")
             the_chatbot_endpoint = the_chatbot[0].get("chatbot_endpoint")
-            logging.warning(the_chatbot_name)
-            logging.warning(the_chatbot_status)
-            logging.warning(the_chatbot_endpoint)
 
             if the_chatbot_status == 'active':
                 return HttpResponse(
@@ -69,8 +64,6 @@ class BackendClient:
             else:
                 updated_chatbot = Chatbot(chatbot_uuid=chatbot_uuid, chatbot_endpoint=the_chatbot_endpoint, chatbot_name=the_chatbot_name, chatbot_status=the_chatbot_status)
                 updated_chatbot.set_status("active")
-                logging.warning("testt")
-                logging.warning(updated_chatbot)
                 response = db.chatbot_container.upsert_item(body=updated_chatbot.to_dict())
                 return HttpResponse(
                     body=f"Chatbot successfully activated",
@@ -94,8 +87,7 @@ class BackendClient:
         await db.initialize()
         try:
             # Get chatbot_uuid
-            chatbot_uuid = req.route_params.get('chatbot_uuid')
-            logging.warning(chatbot_uuid)
+            chatbot_uuid = req.params.get('chatbot_uuid')
             if not chatbot_uuid:
                 return HttpResponse(
                     body="Missing chatbot ID",
@@ -105,7 +97,6 @@ class BackendClient:
             
             # Get chatbot
             the_chatbot = await query_by_key(container=db.chatbot_container, key=chatbot_uuid)
-            logging.warning(the_chatbot)
             if not the_chatbot:
                 return HttpResponse(
                     body="Invalid Chatbot ID",
@@ -117,9 +108,6 @@ class BackendClient:
             the_chatbot_name = the_chatbot[0].get("chatbot_name")
             the_chatbot_status = the_chatbot[0].get("chatbot_status")
             the_chatbot_endpoint = the_chatbot[0].get("chatbot_endpoint")
-            logging.warning(the_chatbot_name)
-            logging.warning(the_chatbot_status)
-            logging.warning(the_chatbot_endpoint)
 
             if the_chatbot_status == 'inactive':
                 return HttpResponse(
@@ -130,8 +118,7 @@ class BackendClient:
             else:
                 updated_chatbot = Chatbot(chatbot_uuid=chatbot_uuid, chatbot_endpoint=the_chatbot_endpoint, chatbot_name=the_chatbot_name, chatbot_status=the_chatbot_status)
                 updated_chatbot.set_status("inactive")
-                logging.warning("testt")
-                logging.warning(updated_chatbot)
+
                 response = db.chatbot_container.upsert_item(body=updated_chatbot.to_dict())
                 return HttpResponse(
                     body=f"Chatbot successfully deactivated",
