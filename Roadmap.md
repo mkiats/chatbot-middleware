@@ -11,6 +11,7 @@ Need to change partition key to something index-able, instead of uuid
 # Azure GUI Deployment
 - Create exceptions to handle custom errors
 - Find way to authenticate without using 'az login', Can try EnvironmentalCredentials
+- Deployment fails when using in the cloud, suspect authentication issue with the DefaultCredentials
 
 
 Users
