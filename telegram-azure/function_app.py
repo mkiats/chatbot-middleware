@@ -18,7 +18,6 @@ app = FunctionApp(http_auth_level=AuthLevel.ANONYMOUS)
 @app.route(route="processTelegramMessage")
 async def process_telegram_message(req: HttpRequest) -> HttpResponse:
     logging.info('Python HTTP trigger function "processTelegramMessage" processed a request.')
-    # return await command_telegram_gateway(req=req, user_container=user_container, chatbot_container=chatbot_container)
     theClient = TelegramClient()
     return await theClient._process_message(req)
 
@@ -75,5 +74,3 @@ async def deactivate_chatbot(req: HttpRequest) -> HttpResponse:
 async def deploy_chatbot(req: HttpRequest) -> HttpResponse:
     logging.warning('deploy_chatbot executed...')
     return await _deploy_chatbot(req)
-
-

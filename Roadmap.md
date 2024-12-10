@@ -1,6 +1,9 @@
 # NextJs GUI
-- Deployment Form
-- Documentation
+- Deployment Form (Take in chatbot-name & zip files)
+- Deployment lifecycle, form querying and pipeline showcase, deploy with telegram support, or without telegram support
+- Feedback
+- Documentation & Bug upload form
+- Login Form at landing page (Theoretically should use ntu.edu.sg auth)
 
 
 # Azure Telegram
@@ -8,12 +11,20 @@ Need to change partition key to something index-able, instead of uuid
 - ChatbotDb maybe can partition by status
 - Pagination for /list command
 - Exception handling
+- Authentication
+
 
 # Azure GUI Deployment
 - Create exceptions to handle custom errors
-- Find way to authenticate without using 'az login', Can try EnvironmentalCredentials
-- Deployment fails when using in the cloud, suspect authentication issue with the DefaultCredentials
-- Chatbot deployed should be added to CosmosDb
+- Try Except for AzureFunctionDeployer initialisation
+- Bug: Deployment fails when using in the cloud, suspect authentication issue with the DefaultCredentials. Find way to authenticate without using 'az login', Can try EnvironmentalCredentials
+- Chatbot deployed via Azure functions should be added to CosmosDb (Backend endpoint to create chatbot)
+- Chatbot name validator method (AzureFunctionDeployer)
+
+
+# Workshop (Week3-4)
+- Go through FYP
+- How deployment works in my app
 
 
 Users
