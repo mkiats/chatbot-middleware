@@ -19,7 +19,7 @@ async def command_telegram_list(chat_id: str, container: ContainerProxy) -> Http
     chatbots = list()
     for chatbot in results:
         theChatbotCallbackData = ChatbotCallbackData(command="command_callback_select", chatbot_uuid=chatbot.get("chatbot_uuid"))
-        theChatbotCallbackData = theChatbotCallbackData.to_callback_string()
+        theChatbotCallbackData = theChatbotCallbackData.to_callback_string() #TODO: change to theChatbotCallbackString instead of using data
         theInlineKeyboardButton = inline_keyboard_button(text=chatbot.get("chatbot_name"), callback_data=theChatbotCallbackData)
         theInlineKeyboardButton = theInlineKeyboardButton.to_dict()
         chatbots.append([theInlineKeyboardButton])

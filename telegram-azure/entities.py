@@ -28,6 +28,7 @@ class User:
         }
 
 class ChatbotCallbackData:
+    #TODO: Remove init method and change to creation and destructuring of callback data to 2 static methods
     def __init__(self, command: str, chatbot_uuid: str):
         self.command = command
         self.chatbot_uuid = chatbot_uuid
