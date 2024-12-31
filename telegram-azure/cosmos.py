@@ -19,7 +19,7 @@ class CosmosDB:
         )
         self._chatbot_container = chatbot_db.create_container_if_not_exists(
             id="chatbots", 
-            partition_key=PartitionKey(path="/developer_uuid")
+            partition_key=PartitionKey(path="/developer_id")
         )
 
     @property

@@ -8,6 +8,7 @@ from _listHandler import command_telegram_list
 from _selectHandler import command_telegram_select
 from _queryHandler import command_telegram_query
 from _common import _parse_payload, _command_mapper, _echo_message
+from entities import ChatbotCallbackData
 
 class TelegramClient:
     @staticmethod
@@ -31,7 +32,7 @@ class TelegramClient:
                 response = await command_telegram_select(chat_id, callback_data, db.user_container, db.chatbot_container)
 
             elif text:
-                theSelectedChatbot = await TelegramClient.validate_chatbot_selection(user_uuid=chat_id, user_container=db.user_container)
+                theSelectedChatbot = await TelegramClient.validate_chatbot_selection(user_id=chat_id, user_container=db.user_container)
                 # Check if chatbot has already been selected, if yes, then forward query to there
                 if theSelectedChatbot == "":
                     text = "Chatbot has yet to be selected, /list to view all available chatbot!"
@@ -52,7 +53,7 @@ class TelegramClient:
     @staticmethod
     def validate_callback(callback_data: str) -> str:
         logging.warning("Executing validate_callback...")
-        [short_command_str, chatbot_uuid] = callback_data.split('_')
+        [short_command_str, chatbot_uuid] = ChatbotCallbackData.destructure_callback_str(callback_data)
         command_str = _command_mapper(command_string=short_command_str, reverse=True)
         if command_str != "":
             return command_str
@@ -60,12 +61,11 @@ class TelegramClient:
             return ""
     
     @staticmethod
-    async def validate_chatbot_selection(user_uuid: str, user_container: ContainerProxy) -> str:
+    async def validate_chatbot_selection(user_id: str, user_container: ContainerProxy) -> str:
         logging.warning("Executing validate_chatbot_selection...")
-        query = f"SELECT * FROM c WHERE c.id = {str(user_uuid)}"
-        userResult = await query_by_key(container=user_container, key=user_uuid)
-        logging.warning(userResult)
-        theSelectedChatbot = userResult[0].get("selected_chatbot")
+        # query = f"SELECT * FROM c WHERE c.id = {str(user_id)}"
+        userResult = await query_by_key(container=user_container, key=user_id)
+        theSelectedChatbot = userResult[0].get("selected_chatbot_id")
         # TODO Add a check that the chatbot is currently active
         if theSelectedChatbot != "":
             return theSelectedChatbot

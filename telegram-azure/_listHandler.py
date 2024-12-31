@@ -13,14 +13,13 @@ async def command_telegram_list(chat_id: str, container: ContainerProxy) -> Http
 
     # Query active chatbot in Cosmos DB
     # TODO: Change to 'active' during deployment
-    query = "SELECT * FROM c WHERE c.chatbot_status = 'active'"
+    query = "SELECT * FROM c WHERE c.status = 'active'"
     results = await query_by_sql(container=container, queryStr=query)
 
     chatbots = list()
     for chatbot in results:
-        theChatbotCallbackData = ChatbotCallbackData(command="command_callback_select", chatbot_uuid=chatbot.get("chatbot_uuid"))
-        theChatbotCallbackData = theChatbotCallbackData.to_callback_string() #TODO: change to theChatbotCallbackString instead of using data
-        theInlineKeyboardButton = inline_keyboard_button(text=chatbot.get("chatbot_name"), callback_data=theChatbotCallbackData)
+        theChatbotCallbackDataString = ChatbotCallbackData.create_callback_str(command="command_callback_select", chatbot_id=chatbot.get("id"))
+        theInlineKeyboardButton = inline_keyboard_button(text=chatbot.get("name"), callback_data=theChatbotCallbackDataString)
         theInlineKeyboardButton = theInlineKeyboardButton.to_dict()
         chatbots.append([theInlineKeyboardButton])
     text = f'The following chatbots are available'
