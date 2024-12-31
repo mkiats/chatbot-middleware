@@ -15,11 +15,11 @@ class CosmosDB:
         
         self._user_container = user_db.create_container_if_not_exists(
             id="users",
-            partition_key=PartitionKey(path="/user_uuid")
+            partition_key=PartitionKey(path="/partition")
         )
         self._chatbot_container = chatbot_db.create_container_if_not_exists(
             id="chatbots", 
-            partition_key=PartitionKey(path="/chatbot_uuid")
+            partition_key=PartitionKey(path="/developer_uuid")
         )
 
     @property
