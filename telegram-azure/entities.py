@@ -1,6 +1,7 @@
+from dataclasses import dataclass
 from _common import _command_mapper
 from exceptions import EntityError
-from typing import Optional, Dict
+from typing import Optional, Dict, Union
 from enum import Enum
 from uuid import uuid4
 import json
@@ -119,6 +120,21 @@ class ChatbotStatus(Enum):
     INACTIVE = "inactive"
     DEBUG = "debug"
 
+@dataclass
+class DeploymentResource:
+    deployment_type: str  # 'managed' or 'custom' or 'terraform'
+    resource_group_name: str
+    location: str = "southeastasia"
+    subscription_id: Optional[str] = None
+    app_insights_name: Optional[str] = None
+    storage_account_name: Optional[str] = None
+
+@dataclass
+class DeploymentCredentials:
+    client_id: Optional[str] = None
+    client_secret: Optional[str] = None
+    tenant_id: Optional[str] = None
+    
 class Chatbot:
     def __init__(
         self,
@@ -130,7 +146,7 @@ class Chatbot:
         status: ChatbotStatus = ChatbotStatus.INACTIVE,
         developer_id: Optional[str] = None,
         telegram_support: bool = False,
-        deployment_resource: Optional[str] = None,
+        deployment_resource: Optional[Union[Dict, DeploymentResource]] = None,
         created_at: Optional[int] = None,
         updated_at: Optional[int] = None
     ):
@@ -138,11 +154,16 @@ class Chatbot:
         self.id = str(id) if id else str(uuid4())
         
         # Validate endpoint format
-        if not endpoint or not self._is_valid_endpoint(endpoint):
-            raise EntityError("Valid endpoint URL is required", "Chatbot", "endpoint")
+        if endpoint=="" or not self._is_valid_endpoint(endpoint):
+            raise EntityError(message="Valid endpoint URL is required", entity_type="Chatbot", field="endpoint")
             
-        if not name or len(name.strip()) == 0:
-            raise EntityError("Chatbot name is required", "Chatbot", "name")
+        if len(name.strip()) == 0:
+            raise EntityError(message="Chatbot name is required", entity_type="Chatbot", field="name")
+        
+        if isinstance(deployment_resource, dict):
+            self.deployment_resource = deployment_resource
+        elif isinstance(deployment_resource, DeploymentResource):
+            self.deployment_resource = deployment_resource.__dict__
             
         # Set basic attributes
         self.version = version

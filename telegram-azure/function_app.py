@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from azure.functions import FunctionApp, HttpRequest, HttpResponse, AuthLevel
 from telegramClient import TelegramClient
 from backendClient import BackendClient
-from deployerClient import _deploy_chatbot
+from deployerClient import AzureFunctionDeployer
 import logging
 import json
 from chatbot import main
@@ -73,4 +73,5 @@ async def deactivate_chatbot(req: HttpRequest) -> HttpResponse:
 @app.route(route="chatbots/deploy", auth_level=AuthLevel.ANONYMOUS)
 async def deploy_chatbot(req: HttpRequest) -> HttpResponse:
     logging.warning('deploy_chatbot executed...')
-    return await _deploy_chatbot(req)
+    theClient = AzureFunctionDeployer()
+    return await theClient.deploy_chatbot(req)

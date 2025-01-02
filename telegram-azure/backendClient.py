@@ -6,6 +6,8 @@ from cosmos import CosmosDB, query_by_key, query_by_sql
 from entities import Chatbot
 import json
 
+# TODO: Edit backend commands
+
 class BackendClient:
     @staticmethod
     async def _get_all_chatbots(req: HttpRequest) -> HttpResponse:
