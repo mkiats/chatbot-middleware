@@ -1,15 +1,13 @@
-from datetime import datetime
-from azure.identity import DefaultAzureCredential, ClientSecretCredential
+from azure.identity import ClientSecretCredential
 from azure.mgmt.web import WebSiteManagementClient
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.storage import StorageManagementClient
-from azure.core.exceptions import ResourceNotFoundError, AzureError
-from typing import Tuple, Dict, Any, Optional
-from exceptions import ChatbotValidationError, DeploymentError
-from entities import DeploymentCredentials, DeploymentResource
+from typing import Dict, Any, Optional
+from exceptions import DeploymentError
+from entities import Chatbot, ChatbotStatus
+from cosmos import CosmosDB
 import azure.functions as func
 import requests
-import asyncio
 import copy
 import os
 import logging
@@ -25,8 +23,11 @@ import uuid
 class AzureFunctionDeployer:
     def __init__(self):
         self.chatbot_name = ""
+        self.version = "1.0.0" #TODO: Need this inside the form data in HttpRequest
         self.function_app_name = ""
         self.chatbot_endpoint = ""
+        self.description = "Some description"
+        self.developer_id = "123123123"
         self.telegram_support = True
         self.deployment_type = None
         self.subscription_id = None
@@ -44,7 +45,6 @@ class AzureFunctionDeployer:
     async def deploy_chatbot(self, req: func.HttpRequest) -> func.HttpResponse:
 
         try:
-            req = req
             files = req.files["chatbot_file"]
             if not files:
                 raise DeploymentError(message="No files uploaded", deployment_stage="Initial")
@@ -67,7 +67,7 @@ class AzureFunctionDeployer:
                 
                 if result:
                     self.chatbot_endpoint = f"{result}/api/query"
-                    # TODO: Add chatbot into cosmos DB
+                    await self._register_new_chatbot()
                     return func.HttpResponse(
                         body=f"Successfully deployed {self.chatbot_name}, You can test your function at: {self.chatbot_endpoint}",
                         mimetype="text/plain",
@@ -399,9 +399,7 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
             raise DeploymentError(message="Unknown error", deployment_stage="CreateZipFolder")
 
     async def _get_deployment_parameters(self, req: func.HttpRequest) -> None:
-
-        try:
-                
+        try: 
             form = req.form
 
             # Retrieve telegram support
@@ -602,6 +600,31 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
             logging.error(f"Error deploying function app: {str(e)}")
             raise DeploymentError(message="Error deploying function app: {str(e)}", deployment_stage="DeployFunctionApp")
 
+    async def _register_new_chatbot(self):
+        try:
+            newChatbot = Chatbot(
+                name=self.chatbot_name,
+                version=self.version,
+                endpoint=self.chatbot_endpoint,
+                description=self.description,
+                status=ChatbotStatus.ACTIVE,
+                developer_id=self.developer_id,
+                telegram_support=self.telegram_support,
+                deployment_resource={
+                    'deployment_type': self.deployment_type,
+                    'resource_group_name': self.resource_group_name,
+                    'location': self.location,
+                    'subscription_id': self.subscription_id,
+                    'app_insights_name': self.app_insights_name,
+                    'storage_account_name': self.storage_account_name
+                }
+            )
+            newChatbot.validate()
+            db = CosmosDB()
+            await db.initialize()
+            db.chatbot_container.upsert_item(body=newChatbot.to_dict())
+        except Exception as e:
+            raise e
 
     # async def validate_existing_resources(self) -> bool:
     #     """Validate that all required resources exist."""

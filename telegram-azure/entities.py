@@ -214,7 +214,7 @@ class Chatbot:
     def to_dict(self) -> Dict:
         """Convert chatbot object to dictionary representation"""
         return {
-            "id": str(self.id),
+            "id": self.id,
             "version": self.version,
             "endpoint": self.endpoint,
             "name": self.name,
