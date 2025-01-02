@@ -15,14 +15,14 @@ app = FunctionApp(http_auth_level=AuthLevel.ANONYMOUS)
 
 
 # Instantiate routes
-@app.route(route="processTelegramMessage")
+@app.route(route="telegram")
 async def process_telegram_message(req: HttpRequest) -> HttpResponse:
     logging.info('Python HTTP trigger function "processTelegramMessage" processed a request.')
     theClient = TelegramClient()
     return await theClient._process_message(req)
 
 
-@app.route(route="processTempMessage", auth_level=AuthLevel.ANONYMOUS)
+@app.route(route="temp", auth_level=AuthLevel.ANONYMOUS)
 def process_temp_message(req: HttpRequest) -> HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
     return HttpResponse(
