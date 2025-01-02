@@ -22,3 +22,18 @@ class EntityError(Exception):
     def formatted_message(self) -> str:
         return self._formatted_message
 
+class DeploymentError(Exception):
+    def __init__(self, message: str, method_type: str, field: Optional[str] = None):
+        self.method_type = method_type
+        self.field = field
+        self.message = message
+        self._formatted_message = (
+            f"{self.method_type} Error: {self.message} (Field: {self.field})"
+            if self.field
+            else f"{self.method_type} Error: {self.message}"
+        )
+        super().__init__(self._formatted_message)
+
+    @property
+    def formatted_message(self) -> str:
+        return self._formatted_message

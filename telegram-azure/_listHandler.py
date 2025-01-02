@@ -12,7 +12,6 @@ async def command_telegram_list(chat_id: str, container: ContainerProxy) -> Http
     logging.warning("Executing command_telegram_list...")
 
     # Query active chatbot in Cosmos DB
-    # TODO: Change to 'active' during deployment
     query = "SELECT * FROM c WHERE c.status = 'active'"
     results = await query_by_sql(container=container, queryStr=query)
 
@@ -40,7 +39,6 @@ async def command_telegram_list(chat_id: str, container: ContainerProxy) -> Http
                 status_code=200
             ) 
     except:
-        # TODO: Create custom error exception class
         return HttpResponse(
             body="Error in executing command_telegram_list", 
             mimetype="text/plain",

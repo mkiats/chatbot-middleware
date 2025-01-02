@@ -239,7 +239,6 @@ class Chatbot:
             raise EntityError(str(e), "Chatbot", "data_conversion")
 
 class ChatbotCallbackData:
-    #TODO: Remove init method and change to creation and destructuring of callback data to 2 static methods
     @staticmethod
     def create_callback_str(command: str, chatbot_id: str):
        return f'{_command_mapper(command, False)}_{chatbot_id}'

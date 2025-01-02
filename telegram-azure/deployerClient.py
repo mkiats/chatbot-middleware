@@ -1,5 +1,5 @@
 from datetime import datetime
-from azure.identity import DefaultAzureCredential
+from azure.identity import DefaultAzureCredential, ClientSecretCredential
 from azure.mgmt.web import WebSiteManagementClient
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.storage import StorageManagementClient
@@ -22,6 +22,12 @@ import uuid
 
 
 async def _deploy_chatbot(req: func.HttpRequest) -> func.HttpResponse:
+
+    '''
+    TODO:
+    First need to find out how to deploy without az login
+    Then Need account for telegram support, external resource group
+    '''
     try:
         uploaded_data = await _destrucuture_zip_folder(req=req)
         flag = await _validate_zip_folder(uploaded_data=uploaded_data)
@@ -362,7 +368,11 @@ class AzureFunctionDeployer:
         app_insights_name: str,
         location: str 
     ):
-        self.credential = DefaultAzureCredential()
+        self.credential = ClientSecretCredential(
+            client_id=os.getenv("CLIENT_ID"),
+            client_secret=os.getenv("CLIENT_SECRET"),
+            tenant_id=os.getenv("TENANT_ID")
+            )
         self.subscription_id = subscription_id
         self.resource_group_name = resource_group_name
         self.storage_account_name = storage_account_name
