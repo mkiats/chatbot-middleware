@@ -23,7 +23,7 @@ import uuid
 class AzureFunctionDeployer:
     def __init__(self):
         self.chatbot_name = ""
-        self.version = "1.0.0" #TODO: Need this inside the form data in HttpRequest
+        self.version = "" #TODO: Need this inside the form data in HttpRequest
         self.function_app_name = ""
         self.chatbot_endpoint = ""
         self.description = "Some description"
