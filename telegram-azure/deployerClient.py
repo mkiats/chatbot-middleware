@@ -85,7 +85,7 @@ class AzureFunctionDeployer:
             return func.HttpResponse(
                 body=str(e),
                 status_code=500,
-                mimetype="application/json"
+                mimetype="text/plain"
             )
 
         
