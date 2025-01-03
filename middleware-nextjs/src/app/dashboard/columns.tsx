@@ -15,9 +15,9 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Chatbot } from '@/lib/entities';
+import { ChatbotEntry } from '@/lib/entities';
 
-export const columns: ColumnDef<Chatbot>[] = [
+export const columns: ColumnDef<ChatbotEntry>[] = [
 	{
 		id: 'select',
 		header: ({ table }) => (

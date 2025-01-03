@@ -1,24 +1,24 @@
-import { Chatbot, ChatbotResponse } from '@/lib/entities';
+import { ChatbotDocument, ChatbotEntry } from '@/lib/entities';
 
-function mapToChatbot(response: ChatbotResponse): Chatbot {
-    // Validate that the status is one of the allowed values
-    const validStatus = (status: string): status is Chatbot['status'] => {
-        return ['active', 'inactive', 'deprecated', 'debug'].includes(status);
-    };
-
-    if (!validStatus(response.chatbot_status)) {
-        throw new Error(`Invalid status: ${response.chatbot_status}`);
+export async function getAllChatbots(): Promise<ChatbotEntry[]> {
+    function mapToChatbot(theChatbot: ChatbotDocument): ChatbotEntry {
+        // Validate that the status is one of the allowed values
+        const validStatus = (status: string): status is ChatbotDocument['status'] => {
+            return ['active', 'inactive', 'deprecated', 'debug'].includes(status);
+        };
+    
+        if (!validStatus(theChatbot.status)) {
+            throw new Error(`Invalid status: ${theChatbot.status}`);
+        }
+    
+        return {
+            uuid: theChatbot.id,
+            name: theChatbot.name,
+            status: theChatbot.status, // TypeScript now knows this is valid
+            endpoint: theChatbot.endpoint
+        };
     }
 
-    return {
-        uuid: response.chatbot_uuid,
-        name: response.chatbot_name,
-        status: response.chatbot_status, // TypeScript now knows this is valid
-        endpoint: response.chatbot_endpoint
-    };
-}
-
-export default async function getAllChatbots(): Promise<Chatbot[]> {
 	try {
         const response = await fetch('https://mkiats-telegram.azurewebsites.net/api/chatbots');
         
@@ -26,7 +26,7 @@ export default async function getAllChatbots(): Promise<Chatbot[]> {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        const data: ChatbotResponse[] = await response.json();
+        const data: ChatbotDocument[] = await response.json();
         
         return data.map(mapToChatbot);
     } catch (error) {
@@ -34,3 +34,20 @@ export default async function getAllChatbots(): Promise<Chatbot[]> {
         throw error;
     }
 }
+
+// export async function createChatbot(): Promise<ChatbotEntry[]> {
+// 	try {
+//         const response = await fetch('https://mkiats-telegram.azurewebsites.net/api/chatbots/register');
+        
+//         if (!response.ok) {
+//             throw new Error(`HTTP error! status: ${response.status}`);
+//         }
+        
+//         const data: ChatbotDocument[] = await response.json();
+        
+
+//     } catch (error) {
+//         console.error('Error fetching chatbots:', error);
+//         throw error;
+//     }
+// }
