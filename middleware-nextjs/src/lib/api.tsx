@@ -48,7 +48,7 @@ export interface DeploymentResponse {
 
 export async function createChatbot(
 	chatbotFormData: ChatbotFormData,
-): Promise<String> {
+): Promise<string> {
 	try {
 		const requestFormData = new FormData();
 

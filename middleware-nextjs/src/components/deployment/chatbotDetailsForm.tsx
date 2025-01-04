@@ -136,7 +136,7 @@ export const ChatbotDetailsForm: React.FC<ChatbotDetailsFormProps> = ({
 	const form = useForm<z.infer<typeof ChatbotSchema>>({
 		resolver: zodResolver(ChatbotSchema),
 		defaultValues: {
-			name: 'placeholder_name',
+			name: 'Placeholder-Name',
 			version: '1.0.0',
 			description: '',
 			status: 'active',
@@ -173,7 +173,7 @@ export const ChatbotDetailsForm: React.FC<ChatbotDetailsFormProps> = ({
 							/>
 						</FormControl>
 						<FormDescription>
-							Choose a unique name for your chatbot
+							Choose a unique name for your chatbot, Only use AlphaNumeric characters and '-' for spaces!
 						</FormDescription>
 						<FormMessage />
 					</FormItem>

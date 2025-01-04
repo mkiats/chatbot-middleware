@@ -6,16 +6,15 @@ import {
 import ChatbotDetailsValidation from '@/components/deployment/chatbotDetailsValidation';
 import Stepper from '@/components/deployment/stepper';
 import { TermsAndConditions } from '@/components/deployment/termsAndConditions';
-import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import { createChatbot } from '@/lib/api';
-import { ChatbotDocument } from '@/lib/entities';
-import { time } from 'console';
 import { useState } from 'react';
 
-const DeploymentPage = () => {
-	const [currentStep, setCurrentStep] = useState(1);
+const DeploymentPage: React.FC = () => {
+	const [currentStep, setCurrentStep] = useState<number>(1);
 	const [formData, setFormData] = useState<ChatbotFormData | null>(null);
-	const [deploymentMessage, setDeploymentMessage] = useState<String | null>(null);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const [deploymentMessage, setDeploymentMessage] = useState<string>('');
 
 	const stepList = [
 		'Terms & Conditions',
@@ -24,70 +23,70 @@ const DeploymentPage = () => {
 		'Deployment',
 	];
 
-	const handleAcceptTermsAndConditions = () => {
+	const handleAcceptTermsAndConditions = (): void => {
 		setCurrentStep(2);
 	};
 
-	const handleFormSubmit = (data: ChatbotFormData) => {
+	const handleFormSubmit = (data: ChatbotFormData): void => {
 		setFormData(data);
 		setCurrentStep(3);
 	};
 
-	const handleValidationBack = () => {
+	const handleValidationBack = (): void => {
 		setCurrentStep(2);
 	};
 
-	const handleValidationNext = async () => {
-          setCurrentStep(4);
-          if (formData) {
-               let theDeploymentMessage = await createChatbot(formData)
-               setDeploymentMessage(theDeploymentMessage)
-          }
+	const handleValidationNext = async (): Promise<void> => {
+		setCurrentStep(4);
+		if (formData) {
+			setIsLoading(true);
+			try {
+				   const theDeploymentMessage = await createChatbot(formData);
+				   setDeploymentMessage(theDeploymentMessage);
+			} finally {
+				setIsLoading(false);
+			}
+		}
 	};
+
 	return (
-		<>
-			<div className='container h-full mx-auto px-4 py-8'>
-				<div className='h-1/6'>
-					<Stepper currentStep={currentStep} stepList={stepList} />
-				</div>
-
-				<div className='h-5/6'>
-					{currentStep === 1 && (
-						<TermsAndConditions
-							onAccept={handleAcceptTermsAndConditions}
-						/>
-					)}
-
-					{currentStep === 2 && (
-						<ChatbotDetailsForm onSubmit={handleFormSubmit} />
-					)}
-
-					{currentStep === 3 && formData && (
-						<ChatbotDetailsValidation
-							formData={formData}
-							onConfirm={handleValidationNext}
-							onBack={handleValidationBack}
-						/>
-					)}
-					{currentStep === 4 && (
-                              
-                              <div className="w-full">
-                              {deploymentMessage ? (
-                                <p className="text-sm text-gray-600">
-                                  {deploymentMessage}
-                                </p>
-                              ) : (
-                                <Progress 
-                                  value={Date.now() % 100} 
-                                  className="w-full"
-                                />
-                              )}
-                            </div>
-                                   
-					)}
-				</div>
+		<div className='container h-full mx-auto px-4 py-8'>
+			<div className='h-1/6'>
+				<Stepper currentStep={currentStep} stepList={stepList} />
 			</div>
-		</>
+
+			<div className='h-5/6'>
+				{currentStep === 1 && (
+					<TermsAndConditions
+						onAccept={handleAcceptTermsAndConditions}
+					/>
+				)}
+
+				{currentStep === 2 && (
+					<ChatbotDetailsForm onSubmit={handleFormSubmit} />
+				)}
+
+				{currentStep === 3 && formData && (
+					<ChatbotDetailsValidation
+						formData={formData}
+						onConfirm={handleValidationNext}
+						onBack={handleValidationBack}
+					/>
+				)}
+				{currentStep === 4 && (
+					<div className='w-full flex justify-center items-start'>
+						{isLoading ? (
+							<Skeleton className='w-3/4 h-[20px] rounded-full' />
+						) : (
+							<p className='text-sm text-gray-600'>
+								{deploymentMessage}
+
+							</p>
+						)}
+					</div>
+				)}
+			</div>
+		</div>
 	);
 };
 
