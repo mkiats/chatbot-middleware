@@ -65,10 +65,8 @@ export async function createChatbot(
 			'deployment_parameter',
 			JSON.stringify(deploymentParams),
 		);
-
-		// const response = await fetch('https://mkiats-telegram.azurewebsites.net/api/chatbots/register');
 		const response = await fetch(
-			'http://localhost:7071/api/chatbots/deploy',
+			'https://mkiats-telegram.azurewebsites.net/api/chatbots/deploy',
 			{
 				method: 'POST',
 				body: requestFormData,
