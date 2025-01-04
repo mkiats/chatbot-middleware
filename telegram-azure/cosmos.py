@@ -1,3 +1,4 @@
+import logging
 from azure.cosmos import CosmosClient, ContainerProxy, PartitionKey
 from azure.cosmos.exceptions import CosmosHttpResponseError
 from typing import List, Dict, Any, Optional
@@ -45,10 +46,10 @@ async def query_by_key(container: ContainerProxy, key: str) -> List[Dict[str, An
         return items
         
     except CosmosHttpResponseError as e:
-        print(f"Cosmos DB query error: {str(e)}")
+        logging.error(f"Cosmos DB query error: {str(e)}")
         raise
     except Exception as e:
-        print(f"Unexpected error: {str(e)}")
+        logging.error(str(e))
         raise
 
 async def query_by_sql(container: ContainerProxy, queryStr: str) -> List[Dict[str, Any]]:
@@ -60,8 +61,8 @@ async def query_by_sql(container: ContainerProxy, queryStr: str) -> List[Dict[st
 )
         return results
     except CosmosHttpResponseError as e:
-        print(f"Cosmos DB query error: {str(e)}")
+        logging.error(f"Cosmos DB query error: {str(e)}")
         raise
     except Exception as e:
-        print(f"Unexpected error: {str(e)}")
+        logging.error(f"Unexpected error: {str(e)}")
         raise

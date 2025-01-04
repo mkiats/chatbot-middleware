@@ -89,7 +89,7 @@ class AzureFunctionDeployer:
                 )
 
         except Exception as e:
-            logging.warning(str(e))
+            logging.error(str(e))
             return func.HttpResponse(
                 body=str(e),
                 status_code=500,

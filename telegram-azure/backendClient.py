@@ -23,8 +23,9 @@ class BackendClient:
                 status_code=200
             )
         except Exception as e:
+            logging.error("Error occured in _get_all_chatbot")
             return HttpResponse(
-                    body="Error processing _activate_chatbot",
+                    body="Error processing _get_all_chatbot",
                     mimetype="text/plain",
                     status_code=500
                 )
@@ -74,6 +75,7 @@ class BackendClient:
                 )
         
         except Exception as e:
+            logging.error("Error occured in _activate_chatbot")
             return HttpResponse(
                     body="Error processing _activate_chatbot",
                     mimetype="text/plain",
@@ -129,6 +131,7 @@ class BackendClient:
                 )
         
         except Exception as e:
+            logging.error("Error occured in _deactivate_chatbot")
             return HttpResponse(
                     body="Error processing _deactivate_chatbot",
                     mimetype="text/plain",
