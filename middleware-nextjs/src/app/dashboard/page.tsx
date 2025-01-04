@@ -1,4 +1,4 @@
-import getAllChatbots from '@/lib/api';
+import { getAllChatbots } from '@/lib/api';
 import { columns } from './columns';
 import { DataTable } from './data-table';
 

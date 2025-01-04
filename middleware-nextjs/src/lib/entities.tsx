@@ -1,7 +1,7 @@
 export type ChatbotEntry = {
 	uuid: string;
 	name: string;
-	status: 'active' | 'inactive' | 'deprecated' | 'debug';
+	status: 'active' | 'inactive' | 'debug';
 	endpoint: string;
 };
 

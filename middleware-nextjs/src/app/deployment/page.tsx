@@ -6,12 +6,16 @@ import {
 import ChatbotDetailsValidation from '@/components/deployment/chatbotDetailsValidation';
 import Stepper from '@/components/deployment/stepper';
 import { TermsAndConditions } from '@/components/deployment/termsAndConditions';
+import { Progress } from '@/components/ui/progress';
+import { createChatbot } from '@/lib/api';
+import { ChatbotDocument } from '@/lib/entities';
+import { time } from 'console';
 import { useState } from 'react';
 
 const DeploymentPage = () => {
 	const [currentStep, setCurrentStep] = useState(1);
 	const [formData, setFormData] = useState<ChatbotFormData | null>(null);
-	const [progress, setProgress] = useState(0);
+	const [deploymentMessage, setDeploymentMessage] = useState<String | null>(null);
 
 	const stepList = [
 		'Terms & Conditions',
@@ -33,22 +37,12 @@ const DeploymentPage = () => {
 		setCurrentStep(2);
 	};
 
-	const handleValidationNext = () => {
-		setCurrentStep(4);
-	};
-
-	const handleConfirm = () => {
-		setCurrentStep(4);
-		// Simulate progress updates
-		let prog = 0;
-		const interval = setInterval(() => {
-			prog += 20;
-			setProgress(prog);
-			if (prog >= 100) {
-				clearInterval(interval);
-				// Here you would typically redirect to the bot dashboard
-			}
-		}, 1000);
+	const handleValidationNext = async () => {
+          setCurrentStep(4);
+          if (formData) {
+               let theDeploymentMessage = await createChatbot(formData)
+               setDeploymentMessage(theDeploymentMessage)
+          }
 	};
 	return (
 		<>
@@ -68,16 +62,28 @@ const DeploymentPage = () => {
 						<ChatbotDetailsForm onSubmit={handleFormSubmit} />
 					)}
 
-					{currentStep === 3 && (
+					{currentStep === 3 && formData && (
 						<ChatbotDetailsValidation
-							formData={formData!}
+							formData={formData}
 							onConfirm={handleValidationNext}
 							onBack={handleValidationBack}
 						/>
 					)}
-
 					{currentStep === 4 && (
-						<div>DEPLOYMENT PAGE</div>
+                              
+                              <div className="w-full">
+                              {deploymentMessage ? (
+                                <p className="text-sm text-gray-600">
+                                  {deploymentMessage}
+                                </p>
+                              ) : (
+                                <Progress 
+                                  value={Date.now() % 100} 
+                                  className="w-full"
+                                />
+                              )}
+                            </div>
+                                   
 					)}
 				</div>
 			</div>

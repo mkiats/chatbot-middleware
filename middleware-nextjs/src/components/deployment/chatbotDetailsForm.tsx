@@ -24,24 +24,48 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 // First, let's define the ChatbotStatus enum
-export const ChatbotStatusEnum = z.enum([
-	'INACTIVE',
-	'ACTIVE',
-	'MAINTENANCE',
-	'ERROR',
-]);
+export const ChatbotStatusEnum = z.enum(['inactive', 'active', 'debug']);
 export const DeploymentTypeEnum = z.enum(['managed', 'custom', 'terraform']);
+
+// File validation schema
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const ACCEPTED_FILE_TYPES = ['application/zip', 'application/x-zip-compressed'];
+
+const FileSchema = z.custom<File>(
+	(file) => {
+		// Type guard to check if the value is a File object
+		if (!(file instanceof File)) {
+			return false;
+		}
+
+		// Validate size
+		if (file.size > MAX_FILE_SIZE) {
+			return false;
+		}
+
+		// Validate type
+		if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
+			return false;
+		}
+
+		return true;
+	},
+	{
+		message: 'Please provide a valid ZIP file under 50MB',
+	},
+);
 
 // Base schema with common fields
 const BaseChatbotSchema = z.object({
 	name: z.string().default('placeholder_name'),
 	version: z.string().default('1.0.0'),
 	description: z.string().default(''),
-	status: ChatbotStatusEnum.default('ACTIVE'),
+	status: ChatbotStatusEnum.default('active'),
 	developer_id: z.string().optional(),
 	telegram_support: z.boolean().default(true),
 	created_at: z.number().int().optional(),
 	updated_at: z.number().int().optional(),
+	document: FileSchema,
 });
 
 // Managed deployment type schema
@@ -115,8 +139,10 @@ export const ChatbotDetailsForm: React.FC<ChatbotDetailsFormProps> = ({
 			name: 'placeholder_name',
 			version: '1.0.0',
 			description: '',
-			status: 'ACTIVE',
+			status: 'active',
+			developer_id: '257750825',
 			telegram_support: true,
+			document: undefined,
 			deployment_type: 'managed', // Default to managed type
 			location: 'southeastasia',
 			resource_group_name: '',
@@ -218,6 +244,23 @@ export const ChatbotDetailsForm: React.FC<ChatbotDetailsFormProps> = ({
 
 			<FormField
 				control={form.control}
+				name='developer_id'
+				render={({ field }) => (
+					<FormItem>
+						<FormLabel>Developer Id</FormLabel>
+						<FormControl>
+							<Input
+								placeholder='Input your developer Id'
+								{...field}
+							/>
+						</FormControl>
+						<FormMessage />
+					</FormItem>
+				)}
+			/>
+
+			<FormField
+				control={form.control}
 				name='telegram_support'
 				render={({ field }) => (
 					<FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
@@ -235,6 +278,36 @@ export const ChatbotDetailsForm: React.FC<ChatbotDetailsFormProps> = ({
 								onCheckedChange={field.onChange}
 							/>
 						</FormControl>
+					</FormItem>
+				)}
+			/>
+
+			<FormField
+				control={form.control}
+				name='document'
+				render={({ field: { onChange, value, ...field } }) => (
+					<FormItem>
+						<FormLabel>Document Upload</FormLabel>
+						<FormControl>
+							<div className='flex items-center gap-2'>
+								<Input
+									type='file'
+									accept='.zip'
+									onChange={(e) => {
+										const file = e.target.files?.[0];
+										if (file) {
+											// Pass the actual File object directly
+											onChange(file);
+										}
+									}}
+									className='cursor-pointer'
+								/>
+							</div>
+						</FormControl>
+						<FormDescription>
+							Upload a ZIP file (max 50MB)
+						</FormDescription>
+						<FormMessage />
 					</FormItem>
 				)}
 			/>
