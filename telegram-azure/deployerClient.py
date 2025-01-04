@@ -22,10 +22,10 @@ import uuid
 
 class AzureFunctionDeployer:
     def __init__(self):
-        self.chatbot_name = ""
-        self.version = "" #TODO: Need this inside the form data in HttpRequest
+        self.name = ""
+        self.version = ""
         self.function_app_name = ""
-        self.chatbot_endpoint = ""
+        self.endpoint = ""
         self.description = "Some description"
         self.developer_id = "123123123"
         self.telegram_support = True
@@ -57,22 +57,29 @@ class AzureFunctionDeployer:
                 function_app_files = await self._create_required_azure_files(validated_data)
                 zipped_function_app_files = await self._create_in_memory_zip(function_app_files)
                 await self._get_deployment_parameters(req)
-                self.function_app_name = await self._generate_unique_name(self.chatbot_name)
+                self.function_app_name = await self._generate_unique_name(self.name)
 
                 # Deploy function app with code
                 result = await self._deploy_function_app(
                     function_app_name=self.function_app_name,
                     function_app_files=zipped_function_app_files
-                )
-                
+                )                
                 if result:
-                    self.chatbot_endpoint = f"{result}/api/query"
+                    self.endpoint = f"{result}/api/query"
                     await self._register_new_chatbot()
-                    return func.HttpResponse(
-                        body=f"Successfully deployed {self.chatbot_name}, You can test your function at: {self.chatbot_endpoint}",
-                        mimetype="text/plain",
-                        status_code=200
-                    )
+                    response = func.HttpResponse(
+                            body=json.dumps({
+                                "message": f"Successfully deployed {self.name}, You can test your function at: {self.endpoint}",
+                                "endpoint": self.endpoint
+                            }),
+                            mimetype="application/json",
+                            status_code=200
+                        )
+                    # Add CORS headers
+                    response.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+                    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+                    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+                    return response
                 else:
                     logging.warning("Deployment failed")
                     return func.HttpResponse(
@@ -82,13 +89,13 @@ class AzureFunctionDeployer:
                 )
 
         except Exception as e:
+            logging.warning(str(e))
             return func.HttpResponse(
                 body=str(e),
                 status_code=500,
                 mimetype="text/plain"
             )
 
-        
     async def _destrucuture_zip_folder(self, files: Any) -> object:
 
         def _is_text_file(filename: str) -> bool:
@@ -402,15 +409,18 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
         try: 
             form = req.form
 
-            # Retrieve telegram support
-            telegram_support_string = form.get("telegram_support", "True")
-            self.telegram_support = True if telegram_support_string=="True" else False
-            # Retrieve chatbot name
-            self.chatbot_name = form.get("chatbot_name", "Placeholder name")
-
             # Retrieval of Deployment Configuration
-            deployment_parameter_json = form.get("deployment_parameter", "managed")
+            deployment_parameter_json = form.get("deployment_parameter")
             deployment_parameter = json.loads(deployment_parameter_json)
+            # Retrieve Non deployment parameters
+            self.name = deployment_parameter.get("name")
+            self.version = deployment_parameter.get("version")
+            self.description = deployment_parameter.get("description")
+            self.status = ChatbotStatus(deployment_parameter.get("status"))
+            self.developer_id = deployment_parameter.get("developer_id")
+            self.telegram_support = deployment_parameter.get("telegram_support")
+
+            # Retrieve deployment parameters
             self.deployment_type = deployment_parameter.get("deployment_type", "managed")
 
             if self.deployment_type == "managed":
@@ -419,7 +429,6 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
                 self.storage_account_name = os.getenv("STORAGE_ACCOUNT_NAME")
                 self.app_insights_name = os.getenv("APP_INSIGHTS_NAME")
                 self.location = os.getenv("LOCATION", "southeastasia")
-                
                 self.credential = ClientSecretCredential(
                     client_id=os.getenv("CLIENT_ID"),
                     client_secret=os.getenv("CLIENT_SECRET"),
@@ -427,22 +436,22 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
                     )
 
             elif self.deployment_type == "custom":
-                self.subscription_id = deployment_parameter.get("subscription_id", None)
-                self.resource_group_name = deployment_parameter.get("resource_group_name", None)
-                self.storage_account_name = deployment_parameter.get("storage_account_name", None)
-                self.app_insights_name = deployment_parameter.get("app_insights_name", None)
-                self.location = deployment_parameter.get("location", None)
+                self.subscription_id = deployment_parameter.get("subscription_id")
+                self.resource_group_name = deployment_parameter.get("resource_group_name")
+                self.storage_account_name = deployment_parameter.get("storage_account_name")
+                self.app_insights_name = deployment_parameter.get("app_insights_name")
+                self.location = deployment_parameter.get("location")
                 self.credential = ClientSecretCredential(
-                    client_id=deployment_parameter.get("client_id", None),
-                    client_secret=deployment_parameter.get("client_secret", None),
-                    tenant_id=deployment_parameter.get("tenant_id", None)
+                    client_id=deployment_parameter.get("client_id"),
+                    client_secret=deployment_parameter.get("client_secret"),
+                    tenant_id=deployment_parameter.get("tenant_id")
                     )
 
             elif self.deployment_type == "terraform":
                 self.credential = ClientSecretCredential(
-                    client_id=deployment_parameter.get("client_id", None),
-                    client_secret=deployment_parameter.get("client_secret", None),
-                    tenant_id=deployment_parameter.get("tenant_id", None)
+                    client_id=deployment_parameter.get("client_id"),
+                    client_secret=deployment_parameter.get("client_secret"),
+                    tenant_id=deployment_parameter.get("tenant_id")
                     )
                 #TODO: Terraform script creation goes here, and create a deployment config based on all the resource identifiers
 
@@ -603,11 +612,11 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
     async def _register_new_chatbot(self):
         try:
             newChatbot = Chatbot(
-                name=self.chatbot_name,
+                name=self.name,
                 version=self.version,
-                endpoint=self.chatbot_endpoint,
+                endpoint=self.endpoint,
                 description=self.description,
-                status=ChatbotStatus.ACTIVE,
+                status=self.status,
                 developer_id=self.developer_id,
                 telegram_support=self.telegram_support,
                 deployment_resource={
@@ -624,7 +633,7 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
             await db.initialize()
             db.chatbot_container.upsert_item(body=newChatbot.to_dict())
         except Exception as e:
-            raise e
+            raise DeploymentError(message="Unknown error", deployment_stage="RegisterNewChatbot")
 
     # async def validate_existing_resources(self) -> bool:
     #     """Validate that all required resources exist."""
