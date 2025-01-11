@@ -7,14 +7,17 @@ import ChatbotDetailsValidation from '@/components/deployment/chatbotDetailsVali
 import Stepper from '@/components/deployment/stepper';
 import { TermsAndConditions } from '@/components/deployment/termsAndConditions';
 import { Skeleton } from '@/components/ui/skeleton';
-import { createChatbot } from '@/lib/api';
+import { deployChatbot } from '@/lib/api';
+import { DeployChatbotRequest } from '@/lib/types/requests';
+import { DeployChatbotResponse } from '@/lib/types/responses';
 import { useState } from 'react';
 
 const DeploymentPage: React.FC = () => {
 	const [currentStep, setCurrentStep] = useState<number>(1);
 	const [formData, setFormData] = useState<ChatbotFormData | null>(null);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
-	const [deploymentMessage, setDeploymentMessage] = useState<string>('');
+	const [deploymentMessage, setDeploymentMessage] =
+		useState<DeployChatbotResponse>();
 
 	const stepList = [
 		'Terms & Conditions',
@@ -41,8 +44,12 @@ const DeploymentPage: React.FC = () => {
 		if (formData) {
 			setIsLoading(true);
 			try {
-				   const theDeploymentMessage = await createChatbot(formData);
-				   setDeploymentMessage(theDeploymentMessage);
+				const deployChatbotRequest: DeployChatbotRequest = {
+					chatbotFormData: formData,
+				};
+				const theDeploymentMessage =
+					await deployChatbot(deployChatbotRequest);
+				setDeploymentMessage(theDeploymentMessage);
 			} finally {
 				setIsLoading(false);
 			}
@@ -79,8 +86,7 @@ const DeploymentPage: React.FC = () => {
 							<Skeleton className='w-3/4 h-[20px] rounded-full' />
 						) : (
 							<p className='text-sm text-gray-600'>
-								{deploymentMessage}
-
+								{deploymentMessage?.message}
 							</p>
 						)}
 					</div>

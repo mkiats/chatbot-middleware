@@ -1,10 +1,12 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
-import { ThemeProvider } from '@/components/theme-provider';
-import Navbar from '@/components/navbar';
-import { ModeToggle } from '@/components/dark-mode-toggle';
+import { ThemeProvider } from '@/components/commons/theme-provider';
+import Navbar from '@/components/commons/navbar';
+import { ModeToggle } from '@/components/commons/dark-mode-toggle';
 
+
+require('dotenv').config()
 const geistSans = localFont({
 	src: './fonts/GeistVF.woff',
 	variable: '--font-geist-sans',

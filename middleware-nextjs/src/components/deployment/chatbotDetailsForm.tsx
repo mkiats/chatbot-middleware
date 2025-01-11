@@ -56,7 +56,7 @@ const FileSchema = z.custom<File>(
 );
 
 // Base schema with common fields
-const BaseChatbotSchema = z.object({
+const ChatbotBaseSchema = z.object({
 	name: z.string().default('placeholder_name'),
 	version: z.string().default('1.0.0'),
 	description: z.string().default(''),
@@ -69,7 +69,7 @@ const BaseChatbotSchema = z.object({
 });
 
 // Managed deployment type schema
-const ManagedDeploymentSchema = BaseChatbotSchema.extend({
+const ManagedDeploymentSchema = ChatbotBaseSchema.extend({
 	deployment_type: z.literal('managed'),
 	resource_group_name: z.string().optional(), // Optional for managed
 	location: z.string().default('southeastasia'),
@@ -82,7 +82,7 @@ const ManagedDeploymentSchema = BaseChatbotSchema.extend({
 });
 
 // Custom deployment type schema
-const CustomDeploymentSchema = BaseChatbotSchema.extend({
+const CustomDeploymentSchema = ChatbotBaseSchema.extend({
 	deployment_type: z.literal('custom'),
 	resource_group_name: z.string(),
 	location: z.string().default('southeastasia'),
@@ -95,7 +95,7 @@ const CustomDeploymentSchema = BaseChatbotSchema.extend({
 });
 
 // Terraform deployment type schema
-const TerraformDeploymentSchema = BaseChatbotSchema.extend({
+const TerraformDeploymentSchema = ChatbotBaseSchema.extend({
 	deployment_type: z.literal('terraform'),
 	resource_group_name: z.string().optional(),
 	location: z.string().default('southeastasia'),
