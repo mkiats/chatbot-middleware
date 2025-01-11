@@ -3,15 +3,14 @@ import { ActivateChatbotByIdRequest, DeactivateChatbotByIdRequest, DeleteChatbot
 import { ActivateChatbotByIdResponse, DeactivateChatbotByIdResponse, DeleteChatbotResponse, DeployChatbotResponse, GetAllChatbotsResponse, GetChatbotByIdResponse, GetChatbotsByDeveloperIdResponse, UpdateChatbotByIdResponse } from './types/responses';
 import { Chatbot } from './types/models';
 
-// const DOMAIN_URL = process.env.LOCAL_DOMAIN
-const DOMAIN_URL = process.env.AZURE_DOMAIN
+// const DOMAIN_URL = process.env.NEXT_PUBLIC_LOCAL_DOMAIN
+const DOMAIN_URL = process.env.NEXT_PUBLIC_AZURE_DOMAIN
 
 export async function getAllChatbots(): Promise<GetAllChatbotsResponse> {
 	try {
 		const response = await fetch(
 			`${DOMAIN_URL}/api/chatbots`,
 		);
-
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
 		}
@@ -106,13 +105,16 @@ export async function deployChatbot(
 			'deployment_parameter',
 			JSON.stringify(deploymentParams),
 		);
+		console.log(DOMAIN_URL);
 		const response = await fetch(
-			`${DOMAIN_URL}/api/chatbots/deploy`,
+            `${DOMAIN_URL}/api/chatbots/deploy`,
 			{
 				method: 'POST',
 				body: requestFormData,
 			},
 		);
+		console.log(JSON.stringify(response));
+
 
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
