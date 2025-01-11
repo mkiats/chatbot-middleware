@@ -3,7 +3,7 @@ from azure.mgmt.web import WebSiteManagementClient
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.storage import StorageManagementClient
 from typing import Dict, Any, Optional
-from exceptions import DeploymentError
+from exceptions import DeploymentException
 from entities import Chatbot, ChatbotStatus
 from cosmos import CosmosDB
 import azure.functions as func
@@ -20,7 +20,7 @@ import ast
 import uuid
 
 
-class AzureFunctionDeployer:
+class AzureFunctionDeployerClient:
     def __init__(self):
         self.name = ""
         self.version = ""
@@ -47,7 +47,7 @@ class AzureFunctionDeployer:
         try:
             files = req.files["chatbot_file"]
             if not files:
-                raise DeploymentError(message="No files uploaded", deployment_stage="Initial")
+                raise DeploymentException(message="No files uploaded", deployment_stage="Initial")
             uploaded_data = await self._destrucuture_zip_folder(files)
             logging.warning("Zip folder destructured...")
             validated_data = await self._validate_zip_folder(uploaded_data=uploaded_data)
@@ -65,7 +65,7 @@ class AzureFunctionDeployer:
                     function_app_files=zipped_function_app_files
                 )                
                 if result:
-                    self.endpoint = f"{result}/api/query"
+                    self.endpoint = f"{result}/api/chat/query"
                     await self._register_new_chatbot()
                     response = func.HttpResponse(
                             body=json.dumps({
@@ -112,7 +112,7 @@ class AzureFunctionDeployer:
             # zip_data = req.get_body()
             # files = await req.files.get('file')  # 'file' is the form field name
             if not files:
-                raise DeploymentError(message="No file found in request", deployment_stage="DestructureZipFolder")
+                raise DeploymentException(message="No file found in request", deployment_stage="DestructureZipFolder")
 
             # Read the file into bytes
             zip_data = files.stream.read()
@@ -171,10 +171,10 @@ class AzureFunctionDeployer:
             return response_data
         
         except zipfile.BadZipFile:
-            raise DeploymentError(message="Bad zip file detected", deployment_stage="DestructureZipFolder") 
+            raise DeploymentException(message="Bad zip file detected", deployment_stage="DestructureZipFolder") 
         
         except Exception as e:
-            raise DeploymentError(message="Unknown error", deployment_stage="DestructureZipFolder")
+            raise DeploymentException(message="Unknown error", deployment_stage="DestructureZipFolder")
 
     async def _validate_zip_folder(self, uploaded_data: Dict[str, Any]) -> object:
         try:
@@ -186,11 +186,11 @@ class AzureFunctionDeployer:
             required_files = ['test-python/requirements.txt', 'test-python/chatbot.py']
             for required_file in required_files:
                 if required_file not in files:
-                    raise DeploymentError(message=f"Missing required file: {required_file}", deployment_stage="ValidateZipFolder")
+                    raise DeploymentException(message=f"Missing required file: {required_file}", deployment_stage="ValidateZipFolder")
                 
                 # Check if file is not empty directory
                 if files[required_file].get('content', '') == '':
-                    raise DeploymentError(message=f"Required file is empty: {required_file}", deployment_stage="ValidateZipFolder")
+                    raise DeploymentException(message=f"Required file is empty: {required_file}", deployment_stage="ValidateZipFolder")
 
             # Get chatbot.py content
             chatbot_content = files['test-python/chatbot.py']['content']
@@ -205,31 +205,31 @@ class AzureFunctionDeployer:
                         # Check function parameters
                         args = node.args
                         if len(args.args) != 1:
-                            raise DeploymentError(message="main function must have exactly one parameter", deployment_stage="ValidateZipFolder")
+                            raise DeploymentException(message="main function must have exactly one parameter", deployment_stage="ValidateZipFolder")
                         
                         # Check parameter type annotation
                         if hasattr(args.args[0], 'annotation'):
                             if not isinstance(args.args[0].annotation, ast.Name) or args.args[0].annotation.id != 'str':
-                                raise DeploymentError(message="main function parameter must be annotated as 'str'", deployment_stage="ValidateZipFolder")
+                                raise DeploymentException(message="main function parameter must be annotated as 'str'", deployment_stage="ValidateZipFolder")
                         
                         # Check return type annotation
                         if hasattr(node, 'returns'):
                             if not isinstance(node.returns, ast.Name) or node.returns.id != 'str':
-                                raise DeploymentError(message="main function must return 'str'", deployment_stage="ValidateZipFolder")
+                                raise DeploymentException(message="main function must return 'str'", deployment_stage="ValidateZipFolder")
                         
                         main_function_found = True
                         break
                 
                 if not main_function_found:
-                    raise DeploymentError(message="main function not found in chatbot.py", deployment_stage="ValidateZipFolder")
+                    raise DeploymentException(message="main function not found in chatbot.py", deployment_stage="ValidateZipFolder")
 
             except SyntaxError:
-                raise DeploymentError(message="Invalid Python syntax in chatbot.py", deployment_stage="ValidateZipFolder")
+                raise DeploymentException(message="Invalid Python syntax in chatbot.py", deployment_stage="ValidateZipFolder")
             
             return uploaded_data
 
         except Exception as e:
-            raise DeploymentError(message=f"Unknown error", deployment_stage="ValidateZipFolder")
+            raise DeploymentException(message=f"Unknown error", deployment_stage="ValidateZipFolder")
 
     async def _create_required_azure_files(self, processed_data: dict) -> dict:
         """
@@ -280,7 +280,7 @@ import logging
 
 app = FunctionApp(http_auth_level=AuthLevel.ANONYMOUS)
 
-@app.route(route="query", auth_level=AuthLevel.ANONYMOUS)
+@app.route(route="chat/query", auth_level=AuthLevel.ANONYMOUS)
 async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
     try:
         logging.info('Processing get_chatbot_response')
@@ -376,7 +376,7 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
                 'files': azure_data['files']
             }
         except Exception as e:
-            raise DeploymentError(message=f"Unknown error", deployment_stage="CreateRequiredAzureFiles")
+            raise DeploymentException(message=f"Unknown error", deployment_stage="CreateRequiredAzureFiles")
 
     async def _create_in_memory_zip(self, app_files: Dict[str, Any]) -> bytes:
         try:
@@ -403,7 +403,7 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
             
             return memory_zip.getvalue()
         except Exception as e:
-            raise DeploymentError(message="Unknown error", deployment_stage="CreateZipFolder")
+            raise DeploymentException(message="Unknown error", deployment_stage="CreateZipFolder")
 
     async def _get_deployment_parameters(self, req: func.HttpRequest) -> None:
         try: 
@@ -456,7 +456,7 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
                 #TODO: Terraform script creation goes here, and create a deployment config based on all the resource identifiers
 
             else:
-                raise DeploymentError(message=f"Invalid deployment type", deployment_stage="Before AzureFunctionDeployer")
+                raise DeploymentException(message=f"Invalid deployment type", deployment_stage="Before AzureFunctionDeployer")
             
             # Initialize Azure clients
             self.web_client = WebSiteManagementClient(
@@ -472,7 +472,7 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
                 subscription_id=self.subscription_id
             )    
         except Exception as e:
-            raise DeploymentError(message="Unknown error", deployment_stage="GetDeploymentParameter")
+            raise DeploymentException(message="Unknown error", deployment_stage="GetDeploymentParameter")
     
     async def _generate_unique_name(self, base_name: str, max_length: int = 63) -> str:
         """
@@ -607,7 +607,7 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
             
         except Exception as e:
             logging.error(f"Error deploying function app: {str(e)}")
-            raise DeploymentError(message="Error deploying function app: {str(e)}", deployment_stage="DeployFunctionApp")
+            raise DeploymentException(message="Error deploying function app: {str(e)}", deployment_stage="DeployFunctionApp")
 
     async def _register_new_chatbot(self):
         try:
@@ -633,7 +633,7 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
             await db.initialize()
             db.chatbot_container.upsert_item(body=newChatbot.to_dict())
         except Exception as e:
-            raise DeploymentError(message="Unknown error", deployment_stage="RegisterNewChatbot")
+            raise DeploymentException(message="Unknown error", deployment_stage="RegisterNewChatbot")
 
     # async def validate_existing_resources(self) -> bool:
     #     """Validate that all required resources exist."""

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+import logging
 from _common import _command_mapper
-from exceptions import EntityError
+from exceptions import EntityException
 from typing import Optional, Dict, Union
 from enum import Enum
 from uuid import uuid4
@@ -30,17 +31,17 @@ class User:
         if role!=UserRole.USER:
             # Validate full name
             if not full_name or len(full_name.strip()) == 0:
-                raise EntityError("Full name is required", "User", "full_name")
+                raise EntityException("Full name is required", "User", "full_name")
             # Validate email
             if not email:
-                raise EntityError("Email is required", "User", "email")
+                raise EntityException("Email is required", "User", "email")
             if '@' not in email:
-                raise EntityError("Invalid email format", "User", "email")
+                raise EntityException("Invalid email format", "User", "email")
             # Validate password
             if not password:
-                raise EntityError("Password is required", "User", "password")
+                raise EntityException("Password is required", "User", "password")
             if len(password) < 8:
-                raise EntityError("Password must be at least 8 characters", "User", "password")
+                raise EntityException("Password must be at least 8 characters", "User", "password")
             email=email.lower()
             password=bcrypt.hashpw(
                 password.encode('utf-8'), 
@@ -61,7 +62,7 @@ class User:
     def verify_password(self, password: str) -> bool:
         """Verify if provided password matches stored hash"""
         if not password:
-            raise EntityError("Password is required", "User", "password")
+            raise EntityException("Password is required", "User", "password")
             
         return bcrypt.checkpw(
             password.encode('utf-8'),
@@ -71,9 +72,9 @@ class User:
     def update_password(self, new_password: str) -> None:
         """Update user's password with a new one"""
         if not new_password:
-            raise EntityError("New password is required", "User", "password")
+            raise EntityException("New password is required", "User", "password")
         if len(new_password) < 8:
-            raise EntityError("Password must be at least 8 characters", "User", "password")
+            raise EntityException("Password must be at least 8 characters", "User", "password")
             
         self.password_hash = bcrypt.hashpw(
             new_password.encode('utf-8'),
@@ -99,7 +100,7 @@ class User:
     def from_dict(cls, data: Dict) -> 'User':
         """Create user object from dictionary data"""
         if not data:
-            raise EntityError("Data dictionary is required", "User")
+            raise EntityException("Data dictionary is required", "User")
             
         try:
             return cls(
@@ -112,7 +113,7 @@ class User:
                 updated_at=data.get('updated_at')
             )
         except ValueError as e:
-            raise EntityError(str(e), "User", "from_dict method")
+            raise EntityException(str(e), "User", "from_dict method")
 
 
 class ChatbotStatus(Enum):
@@ -139,7 +140,7 @@ class Chatbot:
     def __init__(
         self,
         id: Optional[str] = None,
-        name: str = "placeholder_name",
+        name: str = "placeholder name",
         version: str = "1.0.0",
         endpoint: str = "",
         description: str = "",
@@ -155,10 +156,10 @@ class Chatbot:
         
         # Validate endpoint format
         if endpoint=="" or not self._is_valid_endpoint(endpoint):
-            raise EntityError(message="Valid endpoint URL is required", entity_type="Chatbot", field="endpoint")
+            raise EntityException(message="Valid endpoint URL is required", entity_type="Chatbot", field="endpoint")
             
         if len(name.strip()) == 0:
-            raise EntityError(message="Chatbot name is required", entity_type="Chatbot", field="name")
+            raise EntityException(message="Chatbot name is required", entity_type="Chatbot", field="name")
         
         if isinstance(deployment_resource, dict):
             self.deployment_resource = deployment_resource
@@ -189,25 +190,25 @@ class Chatbot:
     def validate(self) -> bool:
         """Validate chatbot attributes"""
         if not isinstance(self.id, str) or not self.id:
-            raise EntityError("Invalid ID format", "Chatbot", "id")
+            raise EntityException("Invalid ID format", "Chatbot", "id")
             
         if not isinstance(self.version, str) or not self.version:
-            raise EntityError("Invalid version format", "Chatbot", "version")
+            raise EntityException("Invalid version format", "Chatbot", "version")
             
         if not self._is_valid_endpoint(self.endpoint):
-            raise EntityError("Invalid endpoint URL", "Chatbot", "endpoint")
+            raise EntityException("Invalid endpoint URL", "Chatbot", "endpoint")
             
         if not isinstance(self.name, str) or not self.name:
-            raise EntityError("Invalid chatbot name", "Chatbot", "name")
+            raise EntityException("Invalid chatbot name", "Chatbot", "name")
             
         if not isinstance(self.status, ChatbotStatus):
-            raise EntityError("Invalid status", "Chatbot", "status")
+            raise EntityException("Invalid status", "Chatbot", "status")
             
         if self.developer_id and not isinstance(self.developer_id, str):
-            raise EntityError("Invalid developer ID format", "Chatbot", "developer_id")
+            raise EntityException("Invalid developer ID format", "Chatbot", "developer_id")
             
         if not isinstance(self.telegram_support, bool):
-            raise EntityError("telegram_support must be boolean", "Chatbot", "telegram_support")
+            raise EntityException("telegram_support must be boolean", "Chatbot", "telegram_support")
             
         return True
 
@@ -230,17 +231,50 @@ class Chatbot:
     def set_status(self, new_status: ChatbotStatus):
         """Update chatbot status"""
         if not isinstance(new_status, ChatbotStatus):
-            raise EntityError("Invalid status value", "Chatbot", "status")
+            raise EntityException("Invalid status value", "Chatbot", "status")
             
         self.status = new_status
         self.updated_at = int(time.time())
         self.validate()
+    
+    def set_name(self, new_name: str):
+        strip_new_name = new_name.replace(" ", "")
+        if len(new_name) == 0 or len(new_name) >= 32 or not strip_new_name.isalnum():
+            raise EntityException("Invalid name value", "Chatbot", "name")
+        self.name = new_name
+        self.updated_at = int(time.time())
+        self.validate()
+
+    
+    def set_desc(self, new_desc: str):
+        strip_new_desc = new_desc.replace(" ", "")
+        if len(new_desc) == 0 or len(new_desc) >= 300 or not strip_new_desc.isalnum():
+            raise EntityException("Invalid name value", "Chatbot", "desc")
+        self.description = new_desc
+        self.updated_at = int(time.time())
+        self.validate()
+
+    def set_version(self, new_version: str):
+        if len(new_version) == 0 or len(new_version) >= 10:
+            raise EntityException("Invalid name value", "Chatbot", "version")
+        self.version = new_version
+        self.updated_at = int(time.time())
+        self.validate()
+        
+    def validate_json(self):
+        try:
+            chatbot_dict = self.to_dict()
+            json.dumps(chatbot_dict)
+            return True
+        except Exception as e:
+            return False
+        
 
     @classmethod
     def from_dict(cls, data: Dict) -> 'Chatbot':
         """Create chatbot object from dictionary data"""
         if not data:
-            raise EntityError("Data dictionary is required", "Chatbot")
+            raise EntityException("Data dictionary is required", "Chatbot")
             
         try:
             return cls(
@@ -257,7 +291,7 @@ class Chatbot:
                 updated_at=data.get('updated_at')
             )
         except ValueError as e:
-            raise EntityError(str(e), "Chatbot", "data_conversion")
+            raise EntityException(str(e), "Chatbot", "data_conversion")
 
 class ChatbotCallbackData:
     @staticmethod

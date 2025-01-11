@@ -32,11 +32,10 @@ class CosmosDB:
         return self._chatbot_container
 
 
-async def query_by_key(container: ContainerProxy, key: str) -> List[Dict[str, Any]]:
+async def query_by_key(container: ContainerProxy, key: str, val: str) -> List[Dict[str, Any]]:
     try:
-        # Using parameterized query for security
-        query = "SELECT * FROM c WHERE c.id = @key"
-        params = [dict(name="@key", value=str(key))]
+        query = f"SELECT * FROM c WHERE c.{key} = @{key}"
+        params = [dict(name=f"@{key}", value=str(val))]
         
         items = list(container.query_items(
             query=query,
@@ -58,7 +57,7 @@ async def query_by_sql(container: ContainerProxy, queryStr: str) -> List[Dict[st
             query=queryStr,             
             enable_cross_partition_query=True
         )
-)
+    )
         return results
     except CosmosHttpResponseError as e:
         logging.error(f"Cosmos DB query error: {str(e)}")

@@ -4,9 +4,8 @@ from dotenv import load_dotenv
 from azure.functions import FunctionApp, HttpRequest, HttpResponse, AuthLevel
 from telegramClient import TelegramClient
 from backendClient import BackendClient
-from deployerClient import AzureFunctionDeployer
+from azureFunctionDeployerClient import AzureFunctionDeployerClient
 import logging
-import json
 from chatbot import main
 
 # Instantiate function app
@@ -30,30 +29,17 @@ def process_temp_message(req: HttpRequest) -> HttpResponse:
             status_code=200
     )
 
-
-@app.route(route="chatbotv1", auth_level=AuthLevel.ANONYMOUS)
-def chatbotv1(req: HttpRequest) -> HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
-    return HttpResponse(
-            "Chatbotv1 called...",
-            status_code=200
-    )
-
-
-@app.route(route="chatbotv2", auth_level=AuthLevel.ANONYMOUS)
-def chatbotv2(req: HttpRequest) -> HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
-    return HttpResponse(
-            "Chatbotv2 called...",
-            status_code=200
-    )
-
-
-@app.route(route="chatbots", auth_level=AuthLevel.ANONYMOUS)
-async def retrieve_all_chatbot(req: HttpRequest) -> HttpResponse:
+@app.route(route="chatbots/search", auth_level=AuthLevel.ANONYMOUS)
+async def search_chatbots(req: HttpRequest) -> HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
     theClient = BackendClient()
-    return await theClient._get_all_chatbots(req)
+    return await theClient._get_chatbots_by_sql(req)
+
+@app.route(route="chatbots", auth_level=AuthLevel.ANONYMOUS)
+async def get_chatbots(req: HttpRequest) -> HttpResponse:
+    logging.info('Python HTTP trigger function processed a request.')
+    theClient = BackendClient()
+    return await theClient._get_chatbots(req)
 
 
 @app.route(route="chatbots/activate", auth_level=AuthLevel.ANONYMOUS)
@@ -61,6 +47,12 @@ async def activate_chatbot(req: HttpRequest) -> HttpResponse:
     logging.warning('activate_chatbot executed...')
     theClient = BackendClient()
     return await theClient._activate_chatbot(req)
+
+@app.route(route="chatbots/update", auth_level=AuthLevel.ANONYMOUS)
+async def update_chatbot(req: HttpRequest) -> HttpResponse:
+    logging.warning('update_chatbot executed...')
+    theClient = BackendClient()
+    return await theClient._update_chatbot(req)
 
 
 @app.route(route="chatbots/deactivate", auth_level=AuthLevel.ANONYMOUS)
@@ -73,5 +65,5 @@ async def deactivate_chatbot(req: HttpRequest) -> HttpResponse:
 @app.route(route="chatbots/deploy", auth_level=AuthLevel.ANONYMOUS)
 async def deploy_chatbot(req: HttpRequest) -> HttpResponse:
     logging.warning('deploy_chatbot executed...')
-    theClient = AzureFunctionDeployer()
+    theClient = AzureFunctionDeployerClient()
     return await theClient.deploy_chatbot(req)
