@@ -1,10 +1,10 @@
 import { ChatbotFormData } from '@/components/deployment/chatbotDetailsForm';
-import { DeleteChatbotRequest, DeployChatbotRequest, GetChatbotsByDeveloperIdRequest, UpdateChatbotByIdRequest } from './types/requests';
-import { DeleteChatbotResponse, DeployChatbotResponse, GetAllChatbotsResponse, GetChatbotByIdResponse, GetChatbotsByDeveloperIdResponse, UpdateChatbotByIdResponse } from './types/responses';
+import { ActivateChatbotByIdRequest, DeactivateChatbotByIdRequest, DeleteChatbotRequest, DeployChatbotRequest, GetChatbotsByDeveloperIdRequest, UpdateChatbotByIdRequest } from './types/requests';
+import { ActivateChatbotByIdResponse, DeactivateChatbotByIdResponse, DeleteChatbotResponse, DeployChatbotResponse, GetAllChatbotsResponse, GetChatbotByIdResponse, GetChatbotsByDeveloperIdResponse, UpdateChatbotByIdResponse } from './types/responses';
 import { Chatbot } from './types/models';
 
-const DOMAIN_URL = process.env.LOCAL_DOMAIN
-// const DOMAIN_URL = process.env.AZURE_DOMAIN
+// const DOMAIN_URL = process.env.LOCAL_DOMAIN
+const DOMAIN_URL = process.env.AZURE_DOMAIN
 
 export async function getAllChatbots(): Promise<GetAllChatbotsResponse> {
 	try {
@@ -47,9 +47,12 @@ export async function getChatbotById(
 	requestObject: UpdateChatbotByIdRequest
 ): Promise<GetChatbotByIdResponse> {
 	try {
-		// TODO: Change API endpoint to getChatbotById
+		const queryParams = new URLSearchParams({
+            chatbot_id: requestObject.chatbot_id
+        });
+
 		const response = await fetch(
-			`${DOMAIN_URL}/api/chatbots`,
+			`${DOMAIN_URL}/api/chatbots?${queryParams.toString()}`
 		);
 
 		if (!response.ok) {
@@ -82,7 +85,6 @@ export async function updateChatbotById(
 		throw error;
 	}
 }
-
 
 export async function deployChatbot(
 	requestObject: DeployChatbotRequest
@@ -118,6 +120,52 @@ export async function deployChatbot(
 
 		const deploymentResponse: DeployChatbotResponse = await response.json();
 		return deploymentResponse;
+	} catch (error) {
+		console.error('Error fetching chatbots:', error);
+		throw error;
+	}
+}
+
+export async function activateChatbotById(
+	requestObject: ActivateChatbotByIdRequest
+): Promise<ActivateChatbotByIdResponse> {
+	try {
+		const queryParams = new URLSearchParams({
+            chatbot_id: requestObject.chatbot_id
+        });
+
+		const response = await fetch(
+			`${DOMAIN_URL}/api/chatbots?${queryParams.toString()}`
+		);
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		return response.json();
+	} catch (error) {
+		console.error('Error fetching chatbots:', error);
+		throw error;
+	}
+}
+
+export async function deactivateChatbotById(
+	requestObject: DeactivateChatbotByIdRequest
+): Promise<DeactivateChatbotByIdResponse> {
+	try {
+		const queryParams = new URLSearchParams({
+            chatbot_id: requestObject.chatbot_id
+        });
+
+		const response = await fetch(
+			`${DOMAIN_URL}/api/chatbots?${queryParams.toString()}`
+		);
+
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		return response.json();
 	} catch (error) {
 		console.error('Error fetching chatbots:', error);
 		throw error;

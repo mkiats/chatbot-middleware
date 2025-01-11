@@ -10,11 +10,23 @@ export interface GetChatbotByIdRequest {
 }
 
 export interface UpdateChatbotByIdRequest {
-    chatbot: Chatbot;
+    chatbot_id: string;
+    chatbot_name: string;
+    chatbot_desc: string;
+    chatbot_version: string;
+    chatbot_status: string;
 }
 
 export interface DeployChatbotRequest {
     chatbotFormData: ChatbotFormData;
+}
+
+export interface ActivateChatbotByIdRequest {
+    chatbot_id: string;
+}
+
+export interface DeactivateChatbotByIdRequest {
+    chatbot_id: string;
 }
 
 export interface DeleteChatbotRequest {
