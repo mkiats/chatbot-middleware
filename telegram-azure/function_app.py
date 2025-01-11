@@ -41,19 +41,11 @@ async def get_chatbots(req: HttpRequest) -> HttpResponse:
     theClient = BackendClient()
     return await theClient._get_chatbots(req)
 
-
 @app.route(route="chatbots/activate", auth_level=AuthLevel.ANONYMOUS)
 async def activate_chatbot(req: HttpRequest) -> HttpResponse:
     logging.warning('activate_chatbot executed...')
     theClient = BackendClient()
     return await theClient._activate_chatbot(req)
-
-@app.route(route="chatbots/update", auth_level=AuthLevel.ANONYMOUS)
-async def update_chatbot(req: HttpRequest) -> HttpResponse:
-    logging.warning('update_chatbot executed...')
-    theClient = BackendClient()
-    return await theClient._update_chatbot(req)
-
 
 @app.route(route="chatbots/deactivate", auth_level=AuthLevel.ANONYMOUS)
 async def deactivate_chatbot(req: HttpRequest) -> HttpResponse:
@@ -61,6 +53,11 @@ async def deactivate_chatbot(req: HttpRequest) -> HttpResponse:
     theClient = BackendClient()
     return await theClient._deactivate_chatbot(req)
 
+@app.route(route="chatbots/update", auth_level=AuthLevel.ANONYMOUS)
+async def update_chatbot(req: HttpRequest) -> HttpResponse:
+    logging.warning('update_chatbot executed...')
+    theClient = BackendClient()
+    return await theClient._update_chatbot(req)
 
 @app.route(route="chatbots/deploy", auth_level=AuthLevel.ANONYMOUS)
 async def deploy_chatbot(req: HttpRequest) -> HttpResponse:
