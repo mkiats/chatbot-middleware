@@ -62,7 +62,7 @@ async def _query_chatbot(chatbot_endpoint: str, user_query: str) -> HttpResponse
     async with httpx.AsyncClient() as client:
         try:
             request_payload = {
-                'text': user_query
+                'query': user_query
                 }
             response = await client.post(f'{chatbot_endpoint}', json=request_payload)
             return HttpResponse(body=json.dumps(response.text), 
@@ -70,7 +70,7 @@ async def _query_chatbot(chatbot_endpoint: str, user_query: str) -> HttpResponse
                                 status_code=200)
         except Exception as e:
             logging.error(f"Error executing _query_chatbot: {str(e)}")
-            return HttpResponse(str(e), 
+            return HttpResponse(f"Error in executing _query_chatbot, {str(e)}", 
                                 mimetype="text/plain",
                                 status_code=500)
 
