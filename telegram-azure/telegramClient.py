@@ -64,7 +64,7 @@ class TelegramClient:
     async def validate_chatbot_selection(user_id: str, user_container: ContainerProxy) -> str:
         logging.warning("Executing validate_chatbot_selection...")
         # query = f"SELECT * FROM c WHERE c.id = {str(user_id)}"
-        userResult = await query_by_key(container=user_container, key=user_id)
+        userResult = await query_by_key(container=user_container, key="id", val=user_id)
         theSelectedChatbot = userResult[0].get("selected_chatbot_id")
         # TODO Add a check that the chatbot is currently active
         if theSelectedChatbot != "":
