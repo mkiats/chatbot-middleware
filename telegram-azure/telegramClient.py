@@ -38,7 +38,7 @@ class TelegramClient:
                     text = "Chatbot has yet to be selected, /list to view all available chatbot!"
                     response = await _echo_message(chat_id=chat_id, text=text)
                 else:
-                    response = await command_telegram_query(chat_id=chat_id, chatbot_uuid=theSelectedChatbot, user_query=text, chatbot_container=db.chatbot_container)
+                    response = await command_telegram_query(chat_id=chat_id, chatbot_id=theSelectedChatbot, user_query=text, chatbot_container=db.chatbot_container)
                 
             else:
                 logging.warning("Unknown command in _process_message")
@@ -53,7 +53,7 @@ class TelegramClient:
     @staticmethod
     def validate_callback(callback_data: str) -> str:
         logging.warning("Executing validate_callback...")
-        [short_command_str, chatbot_uuid] = ChatbotCallbackData.destructure_callback_str(callback_data)
+        [short_command_str, chatbot_id] = ChatbotCallbackData.destructure_callback_str(callback_data)
         command_str = _command_mapper(command_string=short_command_str, reverse=True)
         if command_str != "":
             return command_str

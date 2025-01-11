@@ -7,9 +7,9 @@ import logging
 
 
 
-async def command_telegram_query(chat_id: str, chatbot_uuid: str, user_query: str, chatbot_container: ContainerProxy) -> HttpResponse:
+async def command_telegram_query(chat_id: str, chatbot_id: str, user_query: str, chatbot_container: ContainerProxy) -> HttpResponse:
     logging.warning("Executing command_telegram_query...")
-    the_chatbot = await query_by_key(container=chatbot_container, key=chatbot_uuid)
+    the_chatbot = await query_by_key(container=chatbot_container, key="id", val=chatbot_id)
     the_chatbot_endpoint = the_chatbot[0].get("endpoint")
     the_response = await _query_chatbot(chatbot_endpoint=the_chatbot_endpoint, user_query=user_query)
     the_response_body = the_response.get_body().decode('utf-8')[1:-2]
