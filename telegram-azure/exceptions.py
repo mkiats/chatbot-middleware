@@ -126,3 +126,47 @@ class BackendException(Exception):
 
     def get_status_code(self):
         return self.status_code
+
+class TelegramExceptionCode(Enum):
+    DEFAULT = "TE400"
+    FORBIDDEN = "TE403"
+    NOT_FOUND = "TE404"
+    INVALID_FIELD = "TE422"
+    DUPLICATE = "TE409"
+
+class TelegramException(Exception):
+    def __init__(
+        self, 
+        message: str,
+        method_name: str,
+        error_code: TelegramExceptionCode = TelegramExceptionCode.DEFAULT,
+        field: Optional[str] = None,
+        details: Optional[Dict[str, Any]] = None
+    ):
+        self.method_name = method_name
+        self.field = field
+        self.message = message
+        self.error_code = error_code
+        self.status_code = int(self.error_code.value[-3:-1])
+        self.details = details or {}
+        
+        self._formatted_message = (
+            f"Error Code: {self.error_code.value} \nMethod name: {self.method_name} \nError Msg: {self.message}"
+            + (f"\nField: {self.field}" if self.field else "")
+        )
+        super().__init__(self._formatted_message)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize error for API responses"""
+        error_dict = {
+            "code": self.error_code.value,
+            "method_name": self.method_name,
+            "message": self.message,
+            "details": self.details
+        }
+        if self.field:
+            error_dict["field"] = self.field
+        return error_dict
+
+    def get_status_code(self):
+        return self.status_code

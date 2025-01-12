@@ -9,6 +9,7 @@ from _selectHandler import command_telegram_select
 from _queryHandler import command_telegram_query
 from _common import _parse_payload, _command_mapper, _echo_message
 from entities import ChatbotCallbackData
+from exceptions import TelegramException, TelegramExceptionCode
 
 class TelegramClient:
     @staticmethod
@@ -44,9 +45,13 @@ class TelegramClient:
                 logging.warning("Unknown command in _process_message")
                 response = await _echo_message(chat_id=chat_id, text="Unknown command detected...")
             return response
-            
+
+        except TelegramException as telegramException:
+            response = await _echo_message(chat_id=chat_id, text=f"{str(telegramException)}")
+            return HttpResponse(str(e), status_code=500)
+
         except Exception as e:
-            logging.error(f"Error processing message: {str(e)}")
+            logging.error(f"Error processing message in TelegramClient: {str(e)}")
             return HttpResponse(str(e), status_code=500)
 
 
