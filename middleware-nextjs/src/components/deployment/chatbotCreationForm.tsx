@@ -68,6 +68,13 @@ const ChatbotBaseSchema = z.object({
 	document: FileSchema,
 });
 
+const deploymentDescriptions = {
+	managed: 'Recommended for projects with no specific naming requirements',
+	custom: 'Use when you have already created Azure resources',
+	terraform:
+		'Recommended when you need to create Azure resources using Infrastructure as Code',
+};
+
 // Managed deployment type schema
 const ManagedDeploymentSchema = ChatbotBaseSchema.extend({
 	deployment_type: z.literal('managed'),
@@ -173,7 +180,8 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 							/>
 						</FormControl>
 						<FormDescription>
-							Choose a unique name for your chatbot, Only use AlphaNumeric characters and '-' for spaces!
+							Choose a unique name for your chatbot, Only use
+							AlphaNumeric characters and '-' for spaces!
 						</FormDescription>
 						<FormMessage />
 					</FormItem>
@@ -327,6 +335,18 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 									<SelectValue placeholder='Select deployment type' />
 								</SelectTrigger>
 							</FormControl>
+							<FormDescription>
+								managed: Recommended for projects with no
+								specific naming requirements
+							</FormDescription>
+							<FormDescription>
+								custom: Use when you have already created Azure
+								resources,
+							</FormDescription>
+							<FormDescription>
+								terraform: Recommended when you need to create
+								Azure resources using Infrastructure as Code,
+							</FormDescription>
 							<SelectContent>
 								{DeploymentTypeEnum.options.map((type) => (
 									<SelectItem key={type} value={type}>
@@ -403,77 +423,73 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 					)}
 				/>
 
-				{isCustom && (
-					<>
-						<FormField
-							control={form.control}
-							name='resource_group_name'
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Resource Group Name</FormLabel>
-									<FormControl>
-										<Input
-											placeholder='Enter resource group name'
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+				<FormField
+					control={form.control}
+					name='resource_group_name'
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Resource Group Name</FormLabel>
+							<FormControl>
+								<Input
+									placeholder='Enter resource group name'
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
 
-						<FormField
-							control={form.control}
-							name='subscription_id'
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Subscription ID</FormLabel>
-									<FormControl>
-										<Input
-											placeholder='Enter subscription ID'
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+				<FormField
+					control={form.control}
+					name='subscription_id'
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Subscription ID</FormLabel>
+							<FormControl>
+								<Input
+									placeholder='Enter subscription ID'
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
 
-						<FormField
-							control={form.control}
-							name='app_insights_name'
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>App Insights Name</FormLabel>
-									<FormControl>
-										<Input
-											placeholder='Enter App Insights name'
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
+				<FormField
+					control={form.control}
+					name='app_insights_name'
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>App Insights Name</FormLabel>
+							<FormControl>
+								<Input
+									placeholder='Enter App Insights name'
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
 
-						<FormField
-							control={form.control}
-							name='storage_account_name'
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>Storage Account Name</FormLabel>
-									<FormControl>
-										<Input
-											placeholder='Enter storage account name'
-											{...field}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-					</>
-				)}
+				<FormField
+					control={form.control}
+					name='storage_account_name'
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Storage Account Name</FormLabel>
+							<FormControl>
+								<Input
+									placeholder='Enter storage account name'
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
 			</>
 		);
 	};
