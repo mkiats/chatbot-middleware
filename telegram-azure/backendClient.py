@@ -184,6 +184,8 @@ class BackendClient:
                     the_chatbot.set_status(ChatbotStatus(req.get_json().get("chatbot_status")))
                 if req.get_json().get("chatbot_version", ""):
                     the_chatbot.set_version(req.get_json().get("chatbot_version"))
+                if isinstance(req.get_json().get("chatbot_telegram_support", ""), bool):
+                    the_chatbot.set_telegram_support(req.get_json().get("chatbot_telegram_support"))
                 response = db.chatbot_container.upsert_item(body=the_chatbot.to_dict())
             except Exception as e:
                 raise BackendException(message=f"Invalid chatbot parameters,  {e}", method_name="_update_chatbot")

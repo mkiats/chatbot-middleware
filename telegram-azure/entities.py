@@ -249,15 +249,22 @@ class Chatbot:
     def set_desc(self, new_desc: str):
         strip_new_desc = new_desc.replace(" ", "")
         if len(new_desc) == 0 or len(new_desc) >= 300 or not strip_new_desc.isalnum():
-            raise EntityException("Invalid name value", "Chatbot", "desc")
+            raise EntityException("Invalid desc value", "Chatbot", "desc")
         self.description = new_desc
         self.updated_at = int(time.time())
         self.validate()
 
     def set_version(self, new_version: str):
         if len(new_version) == 0 or len(new_version) >= 10:
-            raise EntityException("Invalid name value", "Chatbot", "version")
+            raise EntityException("Invalid version value", "Chatbot", "version")
         self.version = new_version
+        self.updated_at = int(time.time())
+        self.validate()
+    
+    def set_telegram_support(self, new_telegram_support: bool):
+        if not isinstance(new_telegram_support, bool):
+            raise EntityException("Invalid telegram support value", "Chatbot", "telegram_support")
+        self.telegram_support = new_telegram_support
         self.updated_at = int(time.time())
         self.validate()
         
