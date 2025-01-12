@@ -1,9 +1,9 @@
 'use client';
 import {
-	ChatbotDetailsForm,
+	ChatbotCreationForm,
 	ChatbotFormData,
-} from '@/components/deployment/chatbotDetailsForm';
-import ChatbotDetailsValidation from '@/components/deployment/chatbotDetailsValidation';
+} from '@/components/deployment/chatbotCreationForm';
+import ChatbotCreationFormValidation from '@/components/deployment/chatbotCreationFormValidation';
 import Stepper from '@/components/deployment/stepper';
 import { TermsAndConditions } from '@/components/deployment/termsAndConditions';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -70,14 +70,15 @@ const DeploymentPage: React.FC = () => {
 				)}
 
 				{currentStep === 2 && (
-					<ChatbotDetailsForm onSubmit={handleFormSubmit} />
+					<ChatbotCreationForm onSubmit={handleFormSubmit} />
 				)}
 
 				{currentStep === 3 && formData && (
-					<ChatbotDetailsValidation
+					<ChatbotCreationFormValidation
 						formData={formData}
 						onConfirm={handleValidationNext}
 						onBack={handleValidationBack}
+						title=''
 					/>
 				)}
 				{currentStep === 4 && (

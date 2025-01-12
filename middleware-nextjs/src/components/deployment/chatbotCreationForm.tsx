@@ -117,7 +117,7 @@ const ChatbotSchema = z.discriminatedUnion('deployment_type', [
 // Type inference
 export type ChatbotFormData = z.infer<typeof ChatbotSchema>;
 
-interface ChatbotDetailsFormProps {
+interface ChatbotCreationFormProps {
 	// The callback function when terms are accepted
 	onSubmit: (data: ChatbotFormData) => void;
 	// Optional props for customization
@@ -126,7 +126,7 @@ interface ChatbotDetailsFormProps {
 	title?: string;
 }
 
-export const ChatbotDetailsForm: React.FC<ChatbotDetailsFormProps> = ({
+export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 	onSubmit,
 	className = '',
 	buttonText = 'Submit',

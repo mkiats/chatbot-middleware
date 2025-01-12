@@ -7,7 +7,7 @@ export interface Chatbot {
 	status: 'active' | 'inactive';
 	developer_id: string;
 	telegram_support: boolean;
-	deployment_resource: string;
+	deployment_resource: DeploymentResource;
 	created_at: number;
 	updated_at: number;
 	_rid: string;
@@ -16,3 +16,12 @@ export interface Chatbot {
 	_attachments: string;
 	_ts: number;
 }
+
+export interface DeploymentResource {
+	deployment_type: 'managed' | 'custom' | 'terraform';
+	resource_group_name: string;
+	location: string;
+	subscription_id: string;
+	app_insights_name: string;
+	storage_account_name: string;
+  }

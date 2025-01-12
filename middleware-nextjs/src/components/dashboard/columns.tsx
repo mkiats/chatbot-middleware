@@ -15,6 +15,7 @@ import {
 import { Chatbot } from '@/lib/types/models';
 import { ActivateChatbotByIdRequest, DeactivateChatbotByIdRequest } from '@/lib/types/requests';
 import { activateChatbotById, deactivateChatbotById } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 
 export const columns: ColumnDef<Chatbot>[] = [
 	{
@@ -96,14 +97,13 @@ export const columns: ColumnDef<Chatbot>[] = [
 		id: 'actions',
 		cell: ({ row }) => {
 			const chatbot = row.original;
+			const router = useRouter();
 
             const handleActivate = async (e: React.MouseEvent<HTMLDivElement>) => {
-				console.log("handleActivate triggered...")
                 e.preventDefault();
                 const activateChatbotRequest: ActivateChatbotByIdRequest = {
 					chatbot_id: chatbot.id  // Accessing the id from the row data
                 };
-				console.log(chatbot.id)
                 const response = await activateChatbotById(activateChatbotRequest);
                 window.location.reload();
             };
@@ -135,6 +135,7 @@ export const columns: ColumnDef<Chatbot>[] = [
 							Copy chatbot endpoint
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
+						<DropdownMenuItem onClick={() => {router.push(`/dashboard/${chatbot.id}`)}} >View chatbot details</DropdownMenuItem>
 						<DropdownMenuItem onClick={handleActivate} >Set active</DropdownMenuItem>
 						<DropdownMenuItem onClick={handleDeactivate}>Set inactive</DropdownMenuItem>
 						<DropdownMenuItem>Terminate instance</DropdownMenuItem>
