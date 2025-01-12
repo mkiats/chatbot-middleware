@@ -104,9 +104,9 @@ const CustomDeploymentSchema = ChatbotBaseSchema.extend({
 // Terraform deployment type schema
 const TerraformDeploymentSchema = ChatbotBaseSchema.extend({
 	deployment_type: z.literal('terraform'),
-	resource_group_name: z.string().optional(),
-	location: z.string().default('southeastasia'),
 	subscription_id: z.string().optional(),
+	location: z.string().default('southeastasia'),
+	resource_group_name: z.string().optional(),
 	app_insights_name: z.string().optional(),
 	storage_account_name: z.string().optional(),
 	client_id: z.string(),
@@ -145,20 +145,20 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 		defaultValues: {
 			name: 'Placeholder-Name',
 			version: '1.0.0',
-			description: '',
+			description: 'Placeholder description',
 			status: 'active',
 			developer_id: '257750825',
 			telegram_support: true,
 			document: undefined,
 			deployment_type: 'managed', // Default to managed type
+			subscription_id: '9003ecbc-8bf5-44d9-a6ce-584e9b8cb37f',
 			location: 'southeastasia',
-			resource_group_name: '',
-			subscription_id: '',
-			app_insights_name: '',
-			storage_account_name: '',
-			client_id: '',
-			client_secret: '',
-			tenant_id: '',
+			resource_group_name: 'terraform-chatbot-deployment',
+			app_insights_name: 'terraform-chatbot-deployment',
+			storage_account_name: 'terraform4chatbot',
+			client_id: '3318c774-1af6-4386-bded-65251b364631',
+			client_secret: '7Wv8Q~JH4edCGcVxxHCABbTu5qSvV.766m-eBc89',
+			tenant_id: '15ce9348-be2a-462b-8fc0-e1765a9b204a',
 		},
 	});
 
@@ -374,6 +374,73 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 			<>
 				<FormField
 					control={form.control}
+					name='subscription_id'
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Subscription ID</FormLabel>
+							<FormControl>
+								<Input
+									placeholder='Enter subscription ID'
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+				<FormField
+					control={form.control}
+					name='resource_group_name'
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Resource Group Name</FormLabel>
+							<FormControl>
+								<Input
+									placeholder='Enter resource group name'
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				<FormField
+					control={form.control}
+					name='app_insights_name'
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>App Insights Name</FormLabel>
+							<FormControl>
+								<Input
+									placeholder='Enter App Insights name'
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				<FormField
+					control={form.control}
+					name='storage_account_name'
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Storage Account Name</FormLabel>
+							<FormControl>
+								<Input
+									placeholder='Enter storage account name'
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				<FormField
+					control={form.control}
 					name='client_id'
 					render={({ field }) => (
 						<FormItem>
@@ -415,74 +482,6 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 							<FormControl>
 								<Input
 									placeholder='Enter tenant ID'
-									{...field}
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-
-				<FormField
-					control={form.control}
-					name='resource_group_name'
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Resource Group Name</FormLabel>
-							<FormControl>
-								<Input
-									placeholder='Enter resource group name'
-									{...field}
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-
-				<FormField
-					control={form.control}
-					name='subscription_id'
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Subscription ID</FormLabel>
-							<FormControl>
-								<Input
-									placeholder='Enter subscription ID'
-									{...field}
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-
-				<FormField
-					control={form.control}
-					name='app_insights_name'
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>App Insights Name</FormLabel>
-							<FormControl>
-								<Input
-									placeholder='Enter App Insights name'
-									{...field}
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-
-				<FormField
-					control={form.control}
-					name='storage_account_name'
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Storage Account Name</FormLabel>
-							<FormControl>
-								<Input
-									placeholder='Enter storage account name'
 									{...field}
 								/>
 							</FormControl>
