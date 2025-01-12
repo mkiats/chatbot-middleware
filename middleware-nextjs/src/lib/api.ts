@@ -91,12 +91,14 @@ export async function updateChatbotById(
 			chatbot_desc: requestObject.chatbot_desc,
 			chatbot_status: requestObject.chatbot_status,
 			chatbot_version: requestObject.chatbot_version,
+			chatbot_telegram_support: requestObject.chatbot_telegram_support
 		};
 		console.log(
 			`${DOMAIN_URL}/api/chatbots/update?${queryParams.toString()}`,
 		);
+		console.log(JSON.stringify(queryBody))
 		const response = await fetch(
-			`${DOMAIN_URL}/api/chatbots?${queryParams.toString()}`,
+			`${DOMAIN_URL}/api/chatbots/update?${queryParams.toString()}`,
 			{
 				method: 'POST',
 				body: JSON.stringify(queryBody),

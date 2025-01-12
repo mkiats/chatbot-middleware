@@ -85,7 +85,7 @@ export const ChatbotViewForm: React.FC<ChatbotViewFormProps> = ({
 
 	// Helper function to determine if a field is editable
 	const isFieldEditable = (fieldName: keyof ChatbotViewData): boolean => {
-		const editableFields = ['name', 'version', 'description', 'status'];
+		const editableFields = ['name', 'version', 'description', 'status', 'telegram_support'];
 		return isEditing && editableFields.includes(fieldName);
 	};
 
@@ -108,19 +108,6 @@ export const ChatbotViewForm: React.FC<ChatbotViewFormProps> = ({
 						</CardHeader>
 						<CardContent className='space-y-6'>
 							{/* ID Field - Read Only */}
-							<FormField
-								control={form.control}
-								name='id'
-								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Chatbot ID</FormLabel>
-										<FormControl>
-											<Input {...field} disabled />
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
 
 							{/* Editable Fields */}
 							<FormField
@@ -185,6 +172,20 @@ export const ChatbotViewForm: React.FC<ChatbotViewFormProps> = ({
 
 							<FormField
 								control={form.control}
+								name='endpoint'
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Endpoint</FormLabel>
+										<FormControl>
+											<Input {...field} disabled />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
 								name='status'
 								render={({ field }) => (
 									<FormItem>
@@ -214,16 +215,26 @@ export const ChatbotViewForm: React.FC<ChatbotViewFormProps> = ({
 									</FormItem>
 								)}
 							/>
-                            <FormField
+
+							<FormField
 								control={form.control}
-								name='endpoint'
+								name='telegram_support'
 								render={({ field }) => (
-									<FormItem>
-										<FormLabel>Endpoint</FormLabel>
+									<FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
+										<div className='space-y-0.5'>
+											<FormLabel className='text-base'>
+												Telegram Support
+											</FormLabel>
+										</div>
 										<FormControl>
-											<Input {...field} disabled />
+											<Switch
+												checked={field.value}
+												onCheckedChange={field.onChange}
+												disabled={
+													!isFieldEditable('telegram_support')
+												}
+											/>
 										</FormControl>
-										<FormMessage />
 									</FormItem>
 								)}
 							/>
@@ -236,8 +247,6 @@ export const ChatbotViewForm: React.FC<ChatbotViewFormProps> = ({
 							<CardTitle>Deployment Configuration</CardTitle>
 						</CardHeader>
 						<CardContent className='space-y-6'>
-							
-
 							<FormField
 								control={form.control}
 								name='deployment_resource.deployment_type'
@@ -334,10 +343,10 @@ export const ChatbotViewForm: React.FC<ChatbotViewFormProps> = ({
 						<CardContent className='space-y-6'>
 							<FormField
 								control={form.control}
-								name='developer_id'
+								name='id'
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Developer ID</FormLabel>
+										<FormLabel>Chatbot ID</FormLabel>
 										<FormControl>
 											<Input {...field} disabled />
 										</FormControl>
@@ -348,21 +357,14 @@ export const ChatbotViewForm: React.FC<ChatbotViewFormProps> = ({
 
 							<FormField
 								control={form.control}
-								name='telegram_support'
+								name='developer_id'
 								render={({ field }) => (
-									<FormItem className='flex flex-row items-center justify-between rounded-lg border p-4'>
-										<div className='space-y-0.5'>
-											<FormLabel className='text-base'>
-												Telegram Support
-											</FormLabel>
-										</div>
+									<FormItem>
+										<FormLabel>Developer ID</FormLabel>
 										<FormControl>
-											<Switch
-												checked={field.value}
-												onCheckedChange={field.onChange}
-												disabled
-											/>
+											<Input {...field} disabled />
 										</FormControl>
+										<FormMessage />
 									</FormItem>
 								)}
 							/>

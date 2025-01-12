@@ -10,11 +10,11 @@ export interface Chatbot {
 	deployment_resource: DeploymentResource;
 	created_at: number;
 	updated_at: number;
-	_rid: string;
-	_self: string;
-	_etag: string;
-	_attachments: string;
-	_ts: number;
+	_rid?: string;
+	_self?: string;
+	_etag?: string;
+	_attachments?: string;
+	_ts?: number;
 }
 
 export interface DeploymentResource {

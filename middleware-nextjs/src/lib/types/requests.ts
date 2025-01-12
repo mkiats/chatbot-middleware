@@ -15,6 +15,7 @@ export interface UpdateChatbotByIdRequest {
 	chatbot_desc: string;
 	chatbot_version: string;
 	chatbot_status: string;
+	chatbot_telegram_support: boolean;
 }
 
 export interface DeployChatbotRequest {
