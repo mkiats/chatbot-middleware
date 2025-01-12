@@ -2,14 +2,16 @@ from azure.identity import ClientSecretCredential
 from azure.mgmt.web import WebSiteManagementClient
 from azure.mgmt.resource import ResourceManagementClient
 from azure.mgmt.storage import StorageManagementClient
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List, Optional, Tuple
 from exceptions import DeploymentException
 from entities import Chatbot, ChatbotStatus
+from terraformClient import deploy_azure_via_terraform
 from cosmos import CosmosDB
 import azure.functions as func
 import requests
 import copy
 import os
+import re
 import logging
 import io
 import zipfile
@@ -406,23 +408,26 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
             raise DeploymentException(message="Unknown error", deployment_stage="CreateZipFolder")
 
     async def _get_deployment_parameters(self, req: func.HttpRequest) -> None:
-        try: 
-            form = req.form
-
-            # Retrieval of Deployment Configuration
-            deployment_parameter_json = form.get("deployment_parameter")
-            deployment_parameter = json.loads(deployment_parameter_json)
-            # Retrieve Non deployment parameters
+        """
+        Process deployment parameters from the request and set up configuration.
+        Supports managed, custom, and terraform deployment types.
+        """
+        try:
+            # Extract and parse deployment parameters
+            deployment_parameter = json.loads(req.form.get("deployment_parameter"))
+            
+            # Set basic parameters
             self.name = deployment_parameter.get("name")
             self.version = deployment_parameter.get("version")
             self.description = deployment_parameter.get("description")
             self.status = ChatbotStatus(deployment_parameter.get("status"))
             self.developer_id = deployment_parameter.get("developer_id")
             self.telegram_support = deployment_parameter.get("telegram_support")
-
-            # Retrieve deployment parameters
+            
+            # Set deployment type with default to managed
             self.deployment_type = deployment_parameter.get("deployment_type", "managed")
-
+            
+            # Handle managed deployment
             if self.deployment_type == "managed":
                 self.subscription_id = os.getenv("SUBSCRIPTION_ID")
                 self.resource_group_name = os.getenv("RESOURCE_GROUP_NAME")
@@ -432,32 +437,51 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
                 self.credential = ClientSecretCredential(
                     client_id=os.getenv("CLIENT_ID"),
                     client_secret=os.getenv("CLIENT_SECRET"),
-                    tenant_id=os.getenv("TENANT_ID"),
-                    )
+                    tenant_id=os.getenv("TENANT_ID")
+                )
 
-            elif self.deployment_type == "custom":
-                self.subscription_id = deployment_parameter.get("subscription_id")
-                self.resource_group_name = deployment_parameter.get("resource_group_name")
-                self.storage_account_name = deployment_parameter.get("storage_account_name")
-                self.app_insights_name = deployment_parameter.get("app_insights_name")
+            # Handle custom or terraform deployment
+            if self.deployment_type in ("custom", "terraform"):
+                azure_config = {
+                    'subscription_id': deployment_parameter.get("subscription_id"),
+                    'location': deployment_parameter.get("location"),
+                    'resource_group_name': deployment_parameter.get("resource_group_name"),
+                    'app_insights_name': deployment_parameter.get("app_insights_name"),
+                    'storage_account_name': deployment_parameter.get("storage_account_name"),
+                    'tenant_id': deployment_parameter.get("tenant_id"),
+                    'client_id': deployment_parameter.get("client_id"),
+                    'client_secret': deployment_parameter.get("client_secret")
+                }
+                
+                if not self.validate_azure_config(azure_config):
+                    raise DeploymentException("Invalid azure config", "GetDeploymentParameter")
+
+                # Set configuration parameters
+                self.subscription_id = azure_config['subscription_id']
+                self.resource_group_name = azure_config['resource_group_name']
+                self.storage_account_name = azure_config['storage_account_name']
+                self.app_insights_name = azure_config['app_insights_name']
                 self.location = deployment_parameter.get("location")
                 self.credential = ClientSecretCredential(
-                    client_id=deployment_parameter.get("client_id"),
-                    client_secret=deployment_parameter.get("client_secret"),
-                    tenant_id=deployment_parameter.get("tenant_id")
-                    )
+                    client_id=azure_config['client_id'],
+                    client_secret=azure_config['client_secret'],
+                    tenant_id=azure_config['tenant_id']
+                )
 
-            elif self.deployment_type == "terraform":
-                self.credential = ClientSecretCredential(
-                    client_id=deployment_parameter.get("client_id"),
-                    client_secret=deployment_parameter.get("client_secret"),
-                    tenant_id=deployment_parameter.get("tenant_id")
-                    )
-                #TODO: Terraform script creation goes here, and create a deployment config based on all the resource identifiers
-
-            else:
-                raise DeploymentException(message=f"Invalid deployment type", deployment_stage="Before AzureFunctionDeployer")
+                # Handle terraform-specific deployment
+                if self.deployment_type == "terraform":
+                    terraform_config = {**azure_config, "working_dir": "."}
+                    if not self.validate_azure_config(azure_config):
+                        raise DeploymentException("Invalid azure config", "GetDeploymentParameter")
+                    logging.warning(json.dumps(terraform_config))
+                    terraform_status, message = await deploy_azure_via_terraform(**terraform_config)
+                    
+                    print(f"Deployment {'succeeded' if terraform_status else 'failed'}: {message}")
+                    if not terraform_status:
+                        raise DeploymentException(f"Deployment via terraform failed, {message}", "GetDeploymentParameter")
             
+
+
             # Initialize Azure clients
             self.web_client = WebSiteManagementClient(
                 credential=self.credential,
@@ -470,9 +494,12 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
             self.storage_client = StorageManagementClient(
                 credential=self.credential,
                 subscription_id=self.subscription_id
-            )    
+            )
+        except DeploymentException as deploymentException:
+            raise deploymentException
+        
         except Exception as e:
-            raise DeploymentException(message="Unknown error", deployment_stage="GetDeploymentParameter")
+            raise DeploymentException(message="Unknown error, {e}", deployment_stage="GetDeploymentParameter")
     
     async def _generate_unique_name(self, base_name: str, max_length: int = 63) -> str:
         """
@@ -606,7 +633,7 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
             return f"https://{function_app.default_host_name}"
             
         except Exception as e:
-            logging.error(f"Error deploying function app: {str(e)}")
+            logging.error(f"Error deploying function app: {e}")
             raise DeploymentException(message="Error deploying function app: {str(e)}", deployment_stage="DeployFunctionApp")
 
     async def _register_new_chatbot(self):
@@ -633,7 +660,99 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
             await db.initialize()
             db.chatbot_container.upsert_item(body=newChatbot.to_dict())
         except Exception as e:
-            raise DeploymentException(message="Unknown error", deployment_stage="RegisterNewChatbot")
+            raise DeploymentException(message=f"Unknown error {e}", deployment_stage="RegisterNewChatbot")
+
+    def validate_azure_config(self, config: Dict[str, Any], terraform_deployment: bool = False) -> Tuple[bool, List[str], Dict[str, Any]]:
+
+        """
+        Validates and prepares the Azure infrastructure configuration.
+        
+        Args:
+            config: Dictionary containing configuration parameters
+            
+        Returns:
+            Tuple containing:
+                - bool: True if valid, False if invalid
+                - List[str]: List of error messages (empty if valid)
+                - Dict[str, Any]: Processed configuration with defaults (empty if invalid)
+        """
+        errors = []
+        
+        # Required fields check
+
+        required_fields = {
+            'subscription_id': str,
+            'location': str,
+            'resource_group_name': str,
+            'app_insights_name': str,
+            'storage_account_name': str,
+            'tenant_id': str,
+            'client_id': str,
+            'client_secret': str,
+        }
+        if terraform_deployment:
+            required_fields = {
+                **required_fields,
+                'working_dir': str
+            }
+        
+        
+        # Check missing or invalid type fields
+        for field, expected_type in required_fields.items():
+            if field not in config:
+                errors.append(f"Missing required field: {field}")
+            elif not isinstance(config[field], expected_type):
+                errors.append(f"Invalid type for {field}: expected {expected_type.__name__}, got {type(config[field]).__name__}")
+
+        # Location validation (optional with default)
+        if 'location' in config:
+            if not isinstance(config['location'], str):
+                errors.append("Invalid type for location: expected str")
+            elif not config['location']:
+                errors.append("Location cannot be empty if provided")
+
+        # Working directory validation
+        if terraform_deployment and 'working_dir' in config and isinstance(config['working_dir'], str):
+            if not os.path.exists(config['working_dir']):
+                errors.append(f"Working directory does not exist: {config['working_dir']}")
+            elif not os.path.isdir(config['working_dir']):
+                errors.append(f"Working directory path is not a directory: {config['working_dir']}")
+
+        # Resource naming conventions
+        naming_rules = {
+            'resource_group_name': (r'^[a-zA-Z0-9-_]{1,90}$', 
+                                "Resource group name must be 1-90 characters long and can only contain alphanumeric characters, hyphens, and underscores"),
+            'storage_account_name': (r'^[a-z0-9]{3,24}$',
+                                "Storage account name must be 3-24 characters long and can only contain lowercase letters and numbers"),
+            'app_insights_name': (r'^[a-zA-Z0-9-]{1,260}$',
+                                "Application Insights name must be 1-260 characters long and can only contain alphanumeric characters and hyphens")
+        }
+
+        for field, (pattern, error_msg) in naming_rules.items():
+            if field in config and isinstance(config[field], str):
+                if not re.match(pattern, config[field]):
+                    errors.append(error_msg)
+
+        # GUID format validation
+        guid_pattern = r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+        guid_fields = ['subscription_id', 'client_id', 'tenant_id']
+        
+        for field in guid_fields:
+            if field in config and isinstance(config[field], str):
+                if not re.match(guid_pattern, config[field].lower()):
+                    errors.append(f"{field} must be a valid GUID")
+
+        # If there are errors, return early
+        if errors:
+            return False, errors, {}
+
+        # Prepare processed config with defaults
+        processed_config = config.copy()
+        if 'location' not in processed_config:
+            processed_config['location'] = 'southeastasia'
+        
+        return True, [], processed_config
+    
 
     # async def validate_existing_resources(self) -> bool:
     #     """Validate that all required resources exist."""

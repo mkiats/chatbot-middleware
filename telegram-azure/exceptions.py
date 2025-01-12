@@ -8,7 +8,7 @@ class ChatbotValidationError(Exception):
 
 
 class DeploymentExceptionCode(Enum):
-    DEFAULT = "Deployment 400"
+    DEFAULT = "DP400"
 
 
 class DeploymentException(Exception):
