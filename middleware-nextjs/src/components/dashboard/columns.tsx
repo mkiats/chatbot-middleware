@@ -1,11 +1,8 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-
 import { MoreHorizontal, ArrowUpDown } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
 	DropdownMenu,
@@ -15,9 +12,11 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ChatbotDocument } from '@/lib/entities';
+import { Chatbot } from '@/lib/types/models';
+import { ActivateChatbotByIdRequest, DeactivateChatbotByIdRequest } from '@/lib/types/requests';
+import { activateChatbotById, deactivateChatbotById } from '@/lib/api';
 
-export const columns: ColumnDef<ChatbotDocument>[] = [
+export const columns: ColumnDef<Chatbot>[] = [
 	{
 		id: 'select',
 		header: ({ table }) => (
@@ -98,6 +97,26 @@ export const columns: ColumnDef<ChatbotDocument>[] = [
 		cell: ({ row }) => {
 			const chatbot = row.original;
 
+            const handleActivate = async (e: React.MouseEvent<HTMLDivElement>) => {
+				console.log("handleActivate triggered...")
+                e.preventDefault();
+                const activateChatbotRequest: ActivateChatbotByIdRequest = {
+					chatbot_id: chatbot.id  // Accessing the id from the row data
+                };
+				console.log(chatbot.id)
+                const response = await activateChatbotById(activateChatbotRequest);
+                window.location.reload();
+            };
+
+            const handleDeactivate = async (e: React.MouseEvent<HTMLDivElement>) => {
+                e.preventDefault();
+                const deactivateChatbotRequest: DeactivateChatbotByIdRequest = {
+                    chatbot_id: chatbot.id  // Accessing the id from the row data
+                };
+                const response = await deactivateChatbotById(deactivateChatbotRequest);
+                window.location.reload();
+            };
+
 			return (
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
@@ -116,8 +135,8 @@ export const columns: ColumnDef<ChatbotDocument>[] = [
 							Copy chatbot endpoint
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem>Set active</DropdownMenuItem>
-						<DropdownMenuItem>Set inactive</DropdownMenuItem>
+						<DropdownMenuItem onClick={handleActivate} >Set active</DropdownMenuItem>
+						<DropdownMenuItem onClick={handleDeactivate}>Set inactive</DropdownMenuItem>
 						<DropdownMenuItem>Terminate instance</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>

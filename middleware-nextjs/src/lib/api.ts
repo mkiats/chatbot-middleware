@@ -2,6 +2,7 @@ import { ChatbotFormData } from '@/components/deployment/chatbotDetailsForm';
 import { ActivateChatbotByIdRequest, DeactivateChatbotByIdRequest, DeleteChatbotRequest, DeployChatbotRequest, GetChatbotsByDeveloperIdRequest, UpdateChatbotByIdRequest } from './types/requests';
 import { ActivateChatbotByIdResponse, DeactivateChatbotByIdResponse, DeleteChatbotResponse, DeployChatbotResponse, GetAllChatbotsResponse, GetChatbotByIdResponse, GetChatbotsByDeveloperIdResponse, UpdateChatbotByIdResponse } from './types/responses';
 import { Chatbot } from './types/models';
+import { request } from 'http';
 
 // const DOMAIN_URL = process.env.NEXT_PUBLIC_LOCAL_DOMAIN
 const DOMAIN_URL = process.env.NEXT_PUBLIC_AZURE_DOMAIN
@@ -69,9 +70,21 @@ export async function updateChatbotById(
 	requestObject: UpdateChatbotByIdRequest
 ): Promise<UpdateChatbotByIdResponse> {
 	try {
-		// TODO: Change API endpoint to updateChatbotById
+		const queryParams = new URLSearchParams({
+            chatbot_id: requestObject.chatbot_id
+        });
+		const queryBody = {
+			"chatbot_name": requestObject.chatbot_name,
+			"chatbot_desc": requestObject.chatbot_desc,
+			"chatbot_status": requestObject.chatbot_status,
+			"chatbot_version": requestObject.chatbot_version,
+		}
+		console.log(`${DOMAIN_URL}/api/chatbots/update?${queryParams.toString()}`)
 		const response = await fetch(
-			`${DOMAIN_URL}/api/chatbots/update`,
+			`${DOMAIN_URL}/api/chatbots?${queryParams.toString()}`, {
+				method: "POST",
+				body: JSON.stringify(queryBody),
+			},
 		);
 
 		if (!response.ok) {
@@ -132,14 +145,13 @@ export async function activateChatbotById(
 	requestObject: ActivateChatbotByIdRequest
 ): Promise<ActivateChatbotByIdResponse> {
 	try {
+		console.log("api triggered");
 		const queryParams = new URLSearchParams({
             chatbot_id: requestObject.chatbot_id
         });
-
 		const response = await fetch(
-			`${DOMAIN_URL}/api/chatbots?${queryParams.toString()}`
+			`${DOMAIN_URL}/api/chatbots/activate?${queryParams.toString()}`
 		);
-
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
 		}
@@ -160,7 +172,7 @@ export async function deactivateChatbotById(
         });
 
 		const response = await fetch(
-			`${DOMAIN_URL}/api/chatbots?${queryParams.toString()}`
+			`${DOMAIN_URL}/api/chatbots/deactivate?${queryParams.toString()}`
 		);
 
 		if (!response.ok) {
