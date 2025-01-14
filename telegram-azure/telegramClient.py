@@ -48,12 +48,12 @@ class TelegramClient:
 
         except TelegramException as telegramException:
             response = await _echo_message(chat_id=chat_id, text=f"{str(telegramException)}")
-            return HttpResponse(str(e), status_code=500)
+            return response
 
         except Exception as e:
             logging.error(f"Error processing message in TelegramClient: {str(e)}")
             response = await _echo_message(chat_id=chat_id, text=f"{str(e)}")
-            return HttpResponse(str(e), status_code=500)
+            return response
 
 
     @staticmethod

@@ -81,9 +81,6 @@ async def _echo_message(chat_id: str, text: str) -> HttpResponse:
         'chat_id': chat_id,
         'text': text
         }
-    try:
-        response = await _execute_url("sendMessage", json=response_payload)
-        return response
-    except Exception as e:
-        logging.error(f"Error processing message: {str(e)}")
-        return response
+    response = await _execute_url("sendMessage", json=response_payload)
+    return response
+
