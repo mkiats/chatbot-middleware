@@ -64,6 +64,7 @@ async def _query_chatbot(chatbot_endpoint: str, user_query: str) -> HttpResponse
             request_payload = {
                 'query': user_query
                 }
+            logging.warning(f"{chatbot_endpoint}, {json.dumps(request_payload)}")
             response = await client.post(f'{chatbot_endpoint}', json=request_payload)
             return HttpResponse(body=json.dumps(response.text), 
                                 mimetype="application/json",

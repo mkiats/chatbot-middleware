@@ -43,8 +43,40 @@ class AzureFunctionDeployerClient:
         self.resource_client = None
         self.storage_client = None
 
+    async def deploy_chatbot_validate(self, req: func.HttpRequest) -> func.HttpResponse:
+        try:
+            files = req.files["chatbot_file"]
+            if not files:
+                raise DeploymentException(message="No files uploaded", deployment_stage="Initial")
+            uploaded_data = await self._destrucuture_zip_folder(files)
+            logging.warning("Zip folder destructured...")
+            validated_data = await self._validate_zip_folder(uploaded_data=uploaded_data)
+            logging.warning("Zip folder validated...")
+            await self._get_deployment_parameters(req)
+            response_body = {
+                "validation": True,
+                "error_message": ""
+            }
+            return func.HttpResponse(
+                body=json.dumps(response_body),
+                mimetype="application/json",
+                status_code=500
+                )
+        except Exception as e:
+            response_body = {
+                "validation": False,
+                "error_message": str(e)
+            }
+            return func.HttpResponse(
+                body=json.dumps(response_body),
+                mimetype="application/json",
+                status_code=500
+                )
+                
+            
+        
 
-    async def deploy_chatbot(self, req: func.HttpRequest) -> func.HttpResponse:
+    async def deploy_chatbot_full(self, req: func.HttpRequest) -> func.HttpResponse:
 
         try:
             files = req.files["chatbot_file"]
@@ -85,10 +117,10 @@ class AzureFunctionDeployerClient:
                 else:
                     logging.warning("Deployment failed")
                     return func.HttpResponse(
-                    body="Deployment failed",
-                    mimetype="text/plain",
-                    status_code=500
-                )
+                        body="Deployment failed",
+                        mimetype="text/plain",
+                        status_code=500
+                    )
 
         except Exception as e:
             logging.error(str(e))
@@ -470,7 +502,7 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
 
                 # Handle terraform-specific deployment
                 if self.deployment_type == "terraform":
-                    terraform_config = {**azure_config, "working_dir": "."}
+                    terraform_config = {**azure_config, "working_dir": "./terraform"}
                     if not self.validate_azure_config(azure_config):
                         raise DeploymentException("Invalid azure config", "GetDeploymentParameter")
                     logging.warning(json.dumps(terraform_config))

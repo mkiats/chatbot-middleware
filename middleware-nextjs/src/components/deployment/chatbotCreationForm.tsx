@@ -151,14 +151,14 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 			telegram_support: true,
 			document: undefined,
 			deployment_type: 'managed', // Default to managed type
-			subscription_id: '9003ecbc-8bf5-44d9-a6ce-584e9b8cb37f',
+			subscription_id: process.env.NEXT_PUBLIC_subscription_id,
 			location: 'southeastasia',
 			resource_group_name: 'terraform-chatbot-deployment',
 			app_insights_name: 'terraform-chatbot-deployment',
 			storage_account_name: 'terraform4chatbot',
-			client_id: '3318c774-1af6-4386-bded-65251b364631',
-			client_secret: '7Wv8Q~JH4edCGcVxxHCABbTu5qSvV.766m-eBc89',
-			tenant_id: '15ce9348-be2a-462b-8fc0-e1765a9b204a',
+			client_id: process.env.NEXT_PUBLIC_client_id,
+			client_secret: process.env.NEXT_PUBLIC_client_secret,
+			tenant_id: process.env.NEXT_PUBLIC_tenant_id,
 		},
 	});
 

@@ -8,3 +8,4 @@ __pycache__
 telegram-azure/.terraform/providers/registry.terraform.io/hashicorp/azurerm/4.15.0/darwin_arm64/terraform-provider-azurerm_v4.15.0_x5
 telegram-azure/terraform.tfstate
 telegram-azure/terraform.tfvars.json
+telegram-azure/terraform/terraform.tfvars.json

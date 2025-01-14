@@ -59,8 +59,20 @@ async def update_chatbot(req: HttpRequest) -> HttpResponse:
     theClient = BackendClient()
     return await theClient._update_chatbot(req)
 
-@app.route(route="chatbots/deploy", auth_level=AuthLevel.ANONYMOUS)
-async def deploy_chatbot(req: HttpRequest) -> HttpResponse:
+@app.route(route="chatbots/deploy/validate", auth_level=AuthLevel.ANONYMOUS)
+async def deploy_chatbot_validate(req: HttpRequest) -> HttpResponse:
     logging.warning('deploy_chatbot executed...')
     theClient = AzureFunctionDeployerClient()
-    return await theClient.deploy_chatbot(req)
+    return await theClient.deploy_chatbot_validate
+
+@app.route(route="chatbots/deploy/terraform", auth_level=AuthLevel.ANONYMOUS)
+async def deploy_chatbot_terraform(req: HttpRequest) -> HttpResponse:
+    logging.warning('deploy_chatbot executed...')
+    theClient = AzureFunctionDeployerClient()
+    return await theClient.deploy_chatbot_validate(req)
+
+@app.route(route="chatbots/deploy/azure", auth_level=AuthLevel.ANONYMOUS)
+async def deploy_chatbot_full(req: HttpRequest) -> HttpResponse:
+    logging.warning('deploy_chatbot executed...')
+    theClient = AzureFunctionDeployerClient()
+    return await theClient.deploy_chatbot_full(req)
