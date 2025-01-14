@@ -77,6 +77,23 @@ export const columns: ColumnDef<Chatbot>[] = [
 		},
 	},
 	{
+		accessorKey: 'telegram_support',
+		header: ({ column }) => {
+			return (
+				<Button
+					variant='ghost'
+					onClick={() =>
+						column.toggleSorting(column.getIsSorted() === 'asc')
+					}
+					className='text-left'
+				>
+					Telegram support
+					<ArrowUpDown className='ml-2 h-4 w-4' />
+				</Button>
+			);
+		},
+	},
+	{
 		accessorKey: 'endpoint',
 		header: ({ column }) => {
 			return (
