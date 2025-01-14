@@ -10,7 +10,15 @@ import time
 import re
 import bcrypt
 
-
+class TerraformStatus:
+    PENDING = "pending"
+    CREATING_VARS = "creating_vars"
+    INITIALIZING = "initializing"
+    PLANNING = "planning"
+    APPLYING = "applying"
+    COMPLETE = "complete"
+    FAILED = "failed"
+    
 class UserRole(Enum):
     ADMIN = "Admin"
     DEVELOPER = "Developer"

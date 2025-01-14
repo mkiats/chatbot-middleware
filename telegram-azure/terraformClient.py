@@ -16,7 +16,7 @@ async def deploy_azure_via_terraform(
    client_secret: str,
    tenant_id: str,
    working_dir: str,
-   auto_approve: bool = False
+   auto_approve: bool = True
 ) -> tuple[bool, str]:
    """
    Deploy Azure infrastructure using Terraform

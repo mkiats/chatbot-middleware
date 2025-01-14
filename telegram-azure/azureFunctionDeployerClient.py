@@ -53,6 +53,7 @@ class AzureFunctionDeployerClient:
             validated_data = await self._validate_zip_folder(uploaded_data=uploaded_data)
             logging.warning("Zip folder validated...")
             await self._get_deployment_parameters(req)
+            logging.warning("Deployment parameters retrieved...")
             response_body = {
                 "validation": True,
                 "error_message": ""
@@ -60,7 +61,7 @@ class AzureFunctionDeployerClient:
             return func.HttpResponse(
                 body=json.dumps(response_body),
                 mimetype="application/json",
-                status_code=500
+                status_code=200
                 )
         except Exception as e:
             response_body = {
@@ -447,6 +448,7 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
         try:
             # Extract and parse deployment parameters
             deployment_parameter = json.loads(req.form.get("deployment_parameter"))
+            logging.warning(json.dumps(deployment_parameter))
             
             # Set basic parameters
             self.name = deployment_parameter.get("name")
@@ -473,46 +475,21 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
                 )
 
             # Handle custom or terraform deployment
-            if self.deployment_type in ("custom", "terraform"):
-                azure_config = {
-                    'subscription_id': deployment_parameter.get("subscription_id"),
-                    'location': deployment_parameter.get("location"),
-                    'resource_group_name': deployment_parameter.get("resource_group_name"),
-                    'app_insights_name': deployment_parameter.get("app_insights_name"),
-                    'storage_account_name': deployment_parameter.get("storage_account_name"),
-                    'tenant_id': deployment_parameter.get("tenant_id"),
-                    'client_id': deployment_parameter.get("client_id"),
-                    'client_secret': deployment_parameter.get("client_secret")
-                }
-                
-                if not self.validate_azure_config(azure_config):
-                    raise DeploymentException("Invalid azure config", "GetDeploymentParameter")
+            elif self.deployment_type in ("custom", "terraform"):
 
                 # Set configuration parameters
-                self.subscription_id = azure_config['subscription_id']
-                self.resource_group_name = azure_config['resource_group_name']
-                self.storage_account_name = azure_config['storage_account_name']
-                self.app_insights_name = azure_config['app_insights_name']
+                self.subscription_id = deployment_parameter.get('subscription_id')
+                self.resource_group_name = deployment_parameter.get('resource_group_name')
+                self.storage_account_name = deployment_parameter.get('storage_account_name')
+                self.app_insights_name = deployment_parameter.get('app_insights_name')
                 self.location = deployment_parameter.get("location")
                 self.credential = ClientSecretCredential(
-                    client_id=azure_config['client_id'],
-                    client_secret=azure_config['client_secret'],
-                    tenant_id=azure_config['tenant_id']
+                    client_id=deployment_parameter.get('client_id'),
+                    client_secret=deployment_parameter.get('client_secret'),
+                    tenant_id=deployment_parameter.get('tenant_id')
                 )
-
-                # Handle terraform-specific deployment
-                if self.deployment_type == "terraform":
-                    terraform_config = {**azure_config, "working_dir": "./terraform"}
-                    if not self.validate_azure_config(azure_config):
-                        raise DeploymentException("Invalid azure config", "GetDeploymentParameter")
-                    logging.warning(json.dumps(terraform_config))
-                    terraform_status, message = await deploy_azure_via_terraform(**terraform_config)
-                    
-                    print(f"Deployment {'succeeded' if terraform_status else 'failed'}: {message}")
-                    if not terraform_status:
-                        raise DeploymentException(f"Deployment via terraform failed, {message}", "GetDeploymentParameter")
-            
-
+            else:
+                raise DeploymentException("Invalid deployment type", "GetDeploymentParameter")
 
             # Initialize Azure clients
             self.web_client = WebSiteManagementClient(
