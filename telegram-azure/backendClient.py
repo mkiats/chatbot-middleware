@@ -186,18 +186,19 @@ class BackendClient:
                     the_chatbot.set_version(req.get_json().get("chatbot_version"))
                 if isinstance(req.get_json().get("chatbot_telegram_support", ""), bool):
                     the_chatbot.set_telegram_support(req.get_json().get("chatbot_telegram_support"))
-                response = db.chatbot_container.upsert_item(body=the_chatbot.to_dict())
+
+                if the_chatbot.validate_json():
+                    response = db.chatbot_container.upsert_item(body=the_chatbot.to_dict())
+                else:
+                    raise BackendException(message=f"Chatbot.to_dict() not json serialisable", method_name="_update_chatbot")
             except Exception as e:
                 raise BackendException(message=f"Invalid chatbot parameters,  {e}", method_name="_update_chatbot")
             
-            if the_chatbot.validate_json():
-                return HttpResponse(
-                    body=json.dumps({"chatbot": the_chatbot.to_dict()}),
-                    mimetype="application/json",
-                    status_code=200
-                )
-            else:
-                raise BackendException(message=f"Chatbot.to_dict() not json serialisable", method_name="_update_chatbot")
+            return HttpResponse(
+                body=json.dumps({"chatbot": the_chatbot.to_dict()}),
+                mimetype="application/json",
+                status_code=200
+            )
             
         except BackendException as backendException:
             return HttpResponse(

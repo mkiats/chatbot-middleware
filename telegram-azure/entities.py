@@ -246,10 +246,11 @@ class Chatbot:
         self.validate()
     
     def set_name(self, new_name: str):
-        strip_new_name = new_name.replace(" ", "")
-        if len(new_name) == 0 or len(new_name) >= 32 or not strip_new_name.isalnum():
+        strip_new_name = new_name.replace(" ", "-")
+        pattern = re.compile(r'^[a-zA-Z0-9-]+$')
+        if len(strip_new_name) == 0 or len(strip_new_name) >= 32 or not pattern.match(strip_new_name):
             raise EntityException("Invalid name value", "Chatbot", "name")
-        self.name = new_name
+        self.name = strip_new_name
         self.updated_at = int(time.time())
         self.validate()
 

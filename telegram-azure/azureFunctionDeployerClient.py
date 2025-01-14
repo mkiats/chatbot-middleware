@@ -218,7 +218,7 @@ class AzureFunctionDeployerClient:
                 return None
             
             # Look for required files
-            required_files = ['test-python/requirements.txt', 'test-python/chatbot.py']
+            required_files = [f"{uploaded_data.get('root_directory')}/requirements.txt", f"{uploaded_data.get('root_directory')}/chatbot.py"]
             for required_file in required_files:
                 if required_file not in files:
                     raise DeploymentException(message=f"Missing required file: {required_file}", deployment_stage="ValidateZipFolder")
@@ -228,7 +228,7 @@ class AzureFunctionDeployerClient:
                     raise DeploymentException(message=f"Required file is empty: {required_file}", deployment_stage="ValidateZipFolder")
 
             # Get chatbot.py content
-            chatbot_content = files['test-python/chatbot.py']['content']
+            chatbot_content = files[f"{uploaded_data.get('root_directory')}/chatbot.py"]['content']
             
 
             try:

@@ -57,10 +57,9 @@ const DashboardDetails = () => {
 				chatbot_status: chatbotData.status,
 				chatbot_telegram_support: chatbotData.telegram_support
 			};
-			console.log(JSON.stringify(updateChatbotByIdRequest))
 			const response = await updateChatbotById(updateChatbotByIdRequest);
 			setIsEditing(false);
-			// window.location.reload();
+			window.location.reload();
 		} catch (err) {
 			console.error('Error updating chatbot:', err);
 			setError(
