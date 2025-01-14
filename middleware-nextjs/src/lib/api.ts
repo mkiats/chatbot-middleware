@@ -12,11 +12,13 @@ import {
 	ActivateChatbotByIdResponse,
 	DeactivateChatbotByIdResponse,
 	DeleteChatbotResponse,
-	DeployChatbotResponse,
+	DeployApplicationResponse,
+	DeployInfrastructureResponse,
 	GetAllChatbotsResponse,
 	GetChatbotByIdResponse,
 	GetChatbotsByDeveloperIdResponse,
 	UpdateChatbotByIdResponse,
+	ValidateDeploymentResponse,
 } from './types/responses';
 import { Chatbot } from './types/models';
 import { request } from 'http';
@@ -116,9 +118,51 @@ export async function updateChatbotById(
 	}
 }
 
-export async function deployChatbot(
+export async function validateDeployment(
 	requestObject: DeployChatbotRequest,
-): Promise<DeployChatbotResponse> {
+): Promise<ValidateDeploymentResponse> {
+	try {
+		const requestFormData = new FormData();
+		const chatbotFormData = requestObject.chatbotFormData;
+
+		if (chatbotFormData.document) {
+			requestFormData.append('chatbot_file', chatbotFormData.document);
+		}
+
+		const { document, ...deploymentParams } = chatbotFormData;
+
+		// Append all other fields under 'deployment_parameter'
+		requestFormData.append(
+			'deployment_parameter',
+			JSON.stringify(deploymentParams),
+		);
+		const response = await fetch(`${DOMAIN_URL}/api/chatbots/deploy/validate`, {
+			method: 'POST',
+			body: requestFormData,
+		});
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}, ${response.body}`);
+		}
+
+		const responseBody: ValidateDeploymentResponse = await response.json();
+		if (!responseBody.validation) {
+			throw new Error("Validation error! Invalid parameters/file structure detected!")
+		}
+		return responseBody;
+		
+	} catch (error) {
+		console.error('Error validating chatbot:', error);
+		const responseBody = {
+			validation: false,
+			message: "Validation error! Invalid parameters/file structure detected!"
+		}
+		return responseBody;
+	}
+}
+
+export async function deployInfrastructure(
+	requestObject: DeployChatbotRequest,
+): Promise<DeployInfrastructureResponse> {
 	try {
 		const requestFormData = new FormData();
 		const chatbotFormData = requestObject.chatbotFormData;
@@ -136,22 +180,60 @@ export async function deployChatbot(
 			'deployment_parameter',
 			JSON.stringify(deploymentParams),
 		);
-		console.log(DOMAIN_URL);
-		const response = await fetch(`${DOMAIN_URL}/api/chatbots/deploy`, {
+		const response = await fetch(`${DOMAIN_URL}/api/chatbots/deploy/infrastructure`, {
 			method: 'POST',
 			body: requestFormData,
 		});
-		console.log(JSON.stringify(response));
+		if (!response.ok) {
+			throw new Error(`HTTP error! status: ${response.status}`);
+		}
+
+		const responseBody: DeployInfrastructureResponse = await response.json();
+		return responseBody;
+	} catch (error) {
+		console.error('Error deploying infrastructure:', error);
+		throw error;
+	}
+}
+
+export async function deployApplication(
+	requestObject: DeployChatbotRequest,
+): Promise<DeployApplicationResponse> {
+	try {
+		const requestFormData = new FormData();
+		const chatbotFormData = requestObject.chatbotFormData;
+
+		// Append the file with the specific key 'chatbot_file'
+		if (chatbotFormData.document) {
+			requestFormData.append('chatbot_file', chatbotFormData.document);
+		}
+
+		// Extract file from formData
+		const { document, ...deploymentParams } = chatbotFormData;
+
+		// Append all other fields under 'deployment_parameter'
+		requestFormData.append(
+			'deployment_parameter',
+			JSON.stringify(deploymentParams),
+		);
+		const response = await fetch(`${DOMAIN_URL}/api/chatbots/deploy/application`, {
+			method: 'POST',
+			body: requestFormData,
+		});
 
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
 		}
 
-		const deploymentResponse: DeployChatbotResponse = await response.json();
-		return deploymentResponse;
+		const responseBody: DeployApplicationResponse = await response.json();
+		return responseBody;
 	} catch (error) {
-		console.error('Error fetching chatbots:', error);
-		throw error;
+		console.error('Error deploying application:', error);
+		const responseBody = {
+			message: "Chatbot deployment to azure failed",
+			endpoint: ""
+		}
+		return responseBody;
 	}
 }
 

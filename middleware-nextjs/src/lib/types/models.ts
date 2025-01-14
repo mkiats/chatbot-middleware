@@ -25,3 +25,22 @@ export interface DeploymentResource {
 	app_insights_name: string;
 	storage_account_name: string;
   }
+
+export enum TerraformStatus {
+	PENDING = "pending",
+	CREATING_VARS = "creating_vars",
+	INITIALIZING = "initializing",
+	PLANNING = "planning",
+	APPLYING = "applying",
+	COMPLETE = "complete",
+	FAILED = "failed"
+}
+
+export interface DeploymentMessage {
+	message: string;
+	status: 'pending' | 'success' | 'error';
+	subMessages?: Array<{
+		message: string;
+		status: 'pending' | 'success' | 'error';
+	}>;
+}
