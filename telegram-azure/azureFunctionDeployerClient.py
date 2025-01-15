@@ -5,7 +5,6 @@ from azure.mgmt.storage import StorageManagementClient
 from typing import Dict, Any, List, Optional, Tuple
 from exceptions import DeploymentException
 from entities import Chatbot, ChatbotStatus
-from terraformClient import deploy_azure_via_terraform
 from cosmos import CosmosDB
 import azure.functions as func
 import requests

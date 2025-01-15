@@ -1,4 +1,5 @@
-from typing import Any, Dict, Generator
+import asyncio
+from typing import Any, AsyncGenerator, Dict, Generator
 from dotenv import load_dotenv
 from telegramClient import TelegramClient
 from backendClient import BackendClient
@@ -99,6 +100,7 @@ async def terraform_http_start(req: func.HttpRequest, client: str) -> func.HttpR
 
 
         # Create durable orchestration client
+        await asyncio.sleep(5)
         instance_id = await client.start_new(
             "terraform_orchestrator", 
             None, 
@@ -124,8 +126,8 @@ def terraform_orchestrator(context: df.DurableOrchestrationContext) -> Generator
     logging.warning(context)
     
     retry_options = df.RetryOptions(
-        first_retry_interval_in_milliseconds=30000,
-        max_number_of_attempts=1
+        first_retry_interval_in_milliseconds=3000,
+        max_number_of_attempts=3
     )
 
     try:
@@ -138,7 +140,7 @@ def terraform_orchestrator(context: df.DurableOrchestrationContext) -> Generator
         )
         if not vars_result["success"]:
             return vars_result
-            
+        
         # 2. Initialize Terraform
         deployment_params["status"] = TerraformStatus.INITIALIZING
         init_result = yield context.call_activity_with_retry(
@@ -166,7 +168,7 @@ def terraform_orchestrator(context: df.DurableOrchestrationContext) -> Generator
             retry_options,
             deployment_params
         )
-        
+    
         logging.warning("terraform done")
         return apply_result
 
@@ -194,7 +196,7 @@ async def create_terraform_vars(params: dict) -> dict:
             "tenant_id": params["tenant_id"]
         }
         await tf.create_tfvars(variables)  # Added await
-        
+        await asyncio.sleep(5)
         return {
             "success": True,
             "message": "Variables file created successfully",
@@ -214,7 +216,7 @@ async def terraform_init(params: dict) -> dict:
     try:
         tf = TerraformExecutor(params["working_dir"])
         success, output = await tf.init()  # Added await
-        
+        await asyncio.sleep(5)
         return {
             "success": success,
             "message": output,
@@ -234,7 +236,7 @@ async def terraform_plan(params: dict) -> dict:
     try:
         tf = TerraformExecutor(params["working_dir"])
         success, output = await tf.plan()  # Added await
-        
+        await asyncio.sleep(5)
         return {
             "success": success,
             "message": output,
@@ -254,7 +256,7 @@ async def terraform_apply(params: dict) -> dict:
     try:
         tf = TerraformExecutor(params["working_dir"])
         success, output = await tf.apply(auto_approve=True)  # Added await
-        
+        await asyncio.sleep(5)
         return {
             "success": success,
             "message": output,

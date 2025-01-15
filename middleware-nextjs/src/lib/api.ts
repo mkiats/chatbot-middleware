@@ -23,8 +23,8 @@ import {
 import { Chatbot } from './types/models';
 import { request } from 'http';
 
-// const DOMAIN_URL = process.env.NEXT_PUBLIC_LOCAL_DOMAIN
-const DOMAIN_URL = process.env.NEXT_PUBLIC_AZURE_DOMAIN;
+const DOMAIN_URL = process.env.NEXT_PUBLIC_LOCAL_DOMAIN
+// const DOMAIN_URL = process.env.NEXT_PUBLIC_AZURE_DOMAIN;
 
 export async function getAllChatbots(): Promise<GetAllChatbotsResponse> {
 	try {
@@ -180,6 +180,7 @@ export async function deployInfrastructure(
 			'deployment_parameter',
 			JSON.stringify(deploymentParams),
 		);
+		console.log(`${DOMAIN_URL}/api/chatbots/deploy/infrastructure`)
 		const response = await fetch(`${DOMAIN_URL}/api/chatbots/deploy/infrastructure`, {
 			method: 'POST',
 			body: requestFormData,
