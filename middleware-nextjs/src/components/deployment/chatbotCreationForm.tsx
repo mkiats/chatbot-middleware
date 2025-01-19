@@ -336,16 +336,14 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 								</SelectTrigger>
 							</FormControl>
 							<FormDescription>
-								managed: Recommended for projects with no
-								specific naming requirements
+								managed (Recommended): Use when you have no deployment requirements
 							</FormDescription>
 							<FormDescription>
 								custom: Use when you have already created Azure
 								resources,
 							</FormDescription>
 							<FormDescription>
-								terraform: Recommended when you need to create
-								Azure resources using Infrastructure as Code,
+								terraform: Use when you have specific naming requirements
 							</FormDescription>
 							<SelectContent>
 								{DeploymentTypeEnum.options.map((type) => (
