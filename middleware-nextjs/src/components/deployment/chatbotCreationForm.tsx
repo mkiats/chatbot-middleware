@@ -28,7 +28,7 @@ export const ChatbotStatusEnum = z.enum(['inactive', 'active', 'debug']);
 export const DeploymentTypeEnum = z.enum(['managed', 'custom', 'terraform']);
 
 // File validation schema
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_FILE_SIZE = 500 * 1024 * 1024; // 50MB
 const ACCEPTED_FILE_TYPES = ['application/zip', 'application/x-zip-compressed'];
 
 const FileSchema = z.custom<File>(

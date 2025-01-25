@@ -23,8 +23,8 @@ import {
 import { Chatbot } from './types/models';
 import { request } from 'http';
 
-// const DOMAIN_URL = process.env.NEXT_PUBLIC_LOCAL_DOMAIN
-const DOMAIN_URL = process.env.NEXT_PUBLIC_AZURE_DOMAIN;
+const DOMAIN_URL = process.env.NEXT_PUBLIC_LOCAL_DOMAIN
+// const DOMAIN_URL = process.env.NEXT_PUBLIC_AZURE_DOMAIN;
 
 export async function getAllChatbots(): Promise<GetAllChatbotsResponse> {
 	try {
@@ -130,6 +130,7 @@ export async function validateDeployment(
 		}
 
 		const { document, ...deploymentParams } = chatbotFormData;
+		console.log(DOMAIN_URL);
 
 		// Append all other fields under 'deployment_parameter'
 		requestFormData.append(
