@@ -57,7 +57,7 @@ async def _execute_url(method, params="", json="") -> HttpResponse:
                                 status_code=500)
         
 
-async def _query_chatbot(chatbot_endpoint: str, user_query: str) -> HttpResponse:
+async def _query_chatbot(chatbot_endpoint: str, user_query: str) -> str:
     logging.warning("Executing _query_chatbot...")
     async with httpx.AsyncClient() as client:
         try:
@@ -66,14 +66,10 @@ async def _query_chatbot(chatbot_endpoint: str, user_query: str) -> HttpResponse
                 }
             logging.warning(f"{chatbot_endpoint}, {json.dumps(request_payload)}")
             response = await client.post(f'{chatbot_endpoint}', json=request_payload)
-            return HttpResponse(body=response, 
-                                mimetype="text/plain",
-                                status_code=200)
+            return response.text
         except Exception as e:
             logging.error(f"Error executing _query_chatbot: {str(e)}")
-            return HttpResponse(f"Error in executing _query_chatbot, {str(e)}", 
-                                mimetype="text/plain",
-                                status_code=500)
+            raise Exception("Error occured in query chatbot")
 
 
 async def _echo_message(chat_id: str, text: str) -> HttpResponse:
