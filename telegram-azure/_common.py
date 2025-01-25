@@ -66,8 +66,8 @@ async def _query_chatbot(chatbot_endpoint: str, user_query: str) -> HttpResponse
                 }
             logging.warning(f"{chatbot_endpoint}, {json.dumps(request_payload)}")
             response = await client.post(f'{chatbot_endpoint}', json=request_payload)
-            return HttpResponse(body=json.dumps(response.text), 
-                                mimetype="application/json",
+            return HttpResponse(body=response, 
+                                mimetype="text/plain",
                                 status_code=200)
         except Exception as e:
             logging.error(f"Error executing _query_chatbot: {str(e)}")

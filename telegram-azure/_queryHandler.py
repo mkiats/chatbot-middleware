@@ -24,8 +24,7 @@ async def command_telegram_query(chat_id: str, chatbot_id: str, user_query: str,
         else:
             the_chatbot_endpoint = the_chatbot.endpoint
             the_response = await _query_chatbot(chatbot_endpoint=the_chatbot_endpoint, user_query=user_query)
-            response_msg = the_response.get_body().decode('utf-8')[1:-2]
-        response = await _echo_message(chat_id=chat_id, text=response_msg)
+        response = await _echo_message(chat_id=chat_id, text=the_response)
         return response
     except Exception as e:
         response_msg = f"Unknown error occured when querying chatbot, Try /list to refresh and select another chatbot."

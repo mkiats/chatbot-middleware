@@ -1,3 +1,4 @@
+from time import sleep
 from azure.identity import ClientSecretCredential
 from azure.mgmt.web import WebSiteManagementClient
 from azure.mgmt.resource import ResourceManagementClient
@@ -83,9 +84,7 @@ class AzureFunctionDeployerClient:
             if not files:
                 raise DeploymentException(message="No files uploaded", deployment_stage="Initial")
             uploaded_data = await self._destrucuture_zip_folder(files)
-            logging.warning("Zip folder destructured...")
             validated_data = await self._validate_zip_folder(uploaded_data=uploaded_data)
-            logging.warning("Zip folder validated...")
 
             if validated_data:
                 function_app_files = await self._create_required_azure_files(validated_data)
@@ -202,6 +201,7 @@ class AzureFunctionDeployerClient:
                     for filename, info in processed_files.items()
                 }
             }
+            logging.warning(f"Zip folder destructured")
             return response_data
         
         except zipfile.BadZipFile:
@@ -252,6 +252,7 @@ class AzureFunctionDeployerClient:
                                 raise DeploymentException(message="main function must return 'str'", deployment_stage="ValidateZipFolder")
                         
                         main_function_found = True
+                        logging.warning(f"Zip folder validated")
                         break
                 
                 if not main_function_found:
@@ -295,7 +296,7 @@ class AzureFunctionDeployerClient:
                 },
                 "extensionBundle": {
                     "id": "Microsoft.Azure.Functions.ExtensionBundle",
-                    "version": "[3.*, 4.0.0)"
+                    "version": "[4.*, 5.0.0)"
                 }
             }
             
@@ -307,22 +308,22 @@ class AzureFunctionDeployerClient:
             
             # Add function_app.py with basic imports and setup
             function_app_content = '''
-from azure.functions import FunctionApp, HttpRequest, HttpResponse, AuthLevel
+import azure.functions as func
 from chatbot import main
 import json
 import logging
 
-app = FunctionApp(http_auth_level=AuthLevel.ANONYMOUS)
+app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
-@app.route(route="chat/query", auth_level=AuthLevel.ANONYMOUS)
-async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
+@app.route(route="chat/query", auth_level=func.AuthLevel.ANONYMOUS)
+async def get_chatbot_response(req: func.HttpRequest) -> func.HttpResponse:
     try:
         logging.info('Processing get_chatbot_response')
         
         # Check if request has a body
         request_body = req.get_json()
         if not request_body or 'query' not in request_body:
-            return HttpResponse(
+            return func.HttpResponse(
                 body=json.dumps({"error": "Missing 'query' in request body"}),
                 mimetype="application/json",
                 status_code=400
@@ -330,23 +331,23 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
 
         # Get query and process it
         query = request_body.get('query')
-        response_body = await main(query)
+        response_body = await main(str(query))
         
-        return HttpResponse(
+        return func.HttpResponse(
             body=json.dumps(response_body),
             mimetype="application/json",
             status_code=200
         )
             
     except ValueError as ve:
-        return HttpResponse(
+        return func.HttpResponse(
             body=json.dumps({"error": "Invalid JSON in request body"}),
             mimetype="application/json",
             status_code=400
         )
     except Exception as e:
         logging.error(f"Unexpected error: {str(e)}")
-        return HttpResponse(
+        return func.HttpResponse(
             body=json.dumps({"error": "Unknown error from processing get_chatbot_response"}),
             mimetype="application/json",
             status_code=500
@@ -362,8 +363,13 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
             # Add requirements.txt if it doesn't exist
             if f'{root_directory}/requirements.txt' not in azure_data['files']:
                 requirements_content = '''
-        azure-functions
-        azure-functions-worker
+azure-functions
+python-dotenv
+langchain-openai
+langchain-core
+langchain-community
+faiss-cpu
+pypdf
         '''
                 azure_data['files'][f'{root_directory}/requirements.txt'] = {
                     'is_binary': False,
@@ -373,11 +379,13 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
             
             # Add .funcignore if it doesn't exist
             funcignore_content = '''
-        .git*
-        .vscode
-        local.settings.json
-        test
-        .venv
+.git*
+.vscode
+__azurite_db*__.json
+__blobstorage__
+__queuestorage__
+local.settings.json
+test
         '''
             azure_data['files'][f'{root_directory}/.funcignore'] = {
                 'is_binary': False,
@@ -401,7 +409,7 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
             }
             azure_data['file_count'] = len(azure_data['files'])
 
-            
+            logging.warning(f"Azure specific files created")
             return {
                 'status': 'success',
                 'message': 'Successfully converted to Azure Functions structure',
@@ -434,7 +442,7 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
                         content = file_info['content'].encode('utf-8')
                         
                     zf.writestr(relative_path, content)
-            
+            logging.warning(f"Folder re-zipped")
             return memory_zip.getvalue()
         except Exception as e:
             raise DeploymentException(message="Unknown error", deployment_stage="CreateZipFolder")
@@ -503,6 +511,7 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
                 credential=self.credential,
                 subscription_id=self.subscription_id
             )
+            logging.warning(f"Deployment parameters retrieved")
         except DeploymentException as deploymentException:
             raise deploymentException
         
@@ -525,6 +534,7 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
             base_name = base_name[:max_base_length]
             
         # Combine base name and UUID
+        logging.warning("Unique function app name generated")
         return f"{base_name}-{short_uuid}".lower()
 
     async def _deploy_function_app(
@@ -617,32 +627,71 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
             )
             
             function_app = poller.result()
+            logging.warning(f"Function app created")
+
+            await self._enable_oryx_build(function_app_name=function_app_name)
 
             # Get publishing credentials
-            creds = self.web_client.web_apps.begin_list_publishing_credentials(
+            kudu_credentials = self.web_client.web_apps.begin_list_publishing_credentials(
                 self.resource_group_name,
                 function_app_name
             ).result()
 
             # Upload zip file using kudu zip deploy
             deploy_url = f"https://{function_app_name}.scm.azurewebsites.net/api/zipdeploy"
+            deploy_headers = {
+                'Authorization': f'Basic {kudu_credentials}',
+                'Content-Type': 'application/zip',
+                'x-ms-build-remote': 'true'  # Signal to use Oryx build
+            }
+
+
+
             response = requests.post(
                     deploy_url,
-                    headers={'Content-Type': 'application/zip'},
-                    auth=(creds.publishing_user_name, creds.publishing_password),
+                    headers=deploy_headers,
+                    auth=(kudu_credentials.publishing_user_name, kudu_credentials.publishing_password),
                     data=function_app_files
                 )
                 
             if response.status_code not in (200, 202):
                 raise Exception(f"Deployment failed with status {response.status_code}: {response.text}")
 
-            logging.info(f"Successfully deployed code to function app: {function_app_name}")
-                    
+            logging.warning(f"Successfully deployed code to function app: {function_app_name}")
             return f"https://{function_app.default_host_name}"
             
         except Exception as e:
             logging.error(f"Error deploying function app: {e}")
-            raise DeploymentException(message="Error deploying function app: {str(e)}", deployment_stage="DeployFunctionApp")
+            raise DeploymentException(message=f"Error deploying function app: {str(e)}", deployment_stage="DeployFunctionApp")
+
+    async def _enable_oryx_build(self, function_app_name):
+        self.web_client.web_apps.update_configuration(
+            self.resource_group_name,
+            function_app_name,
+            {
+                "scm_type": "None",
+                "build_properties": {
+                    "use_oryx_build": True,
+                    "enable_oryx_build": True
+                }
+            }
+        )
+        settings = self.web_client.web_apps.list_application_settings(
+                    self.resource_group_name,
+                    function_app_name
+                    )
+        settings.properties['SCM_DO_BUILD_DURING_DEPLOYMENT'] = "true"
+        settings.properties.pop('WEBSITE_RUN_FROM_PACKAGE')
+
+        self.web_client.web_apps.update_application_settings(
+            self.resource_group_name,
+            function_app_name,
+            settings
+        )
+        sleep(10)
+        logging.warning(json.dumps(settings.properties))
+        logging.warning(f"Oryx build enabled")
+
 
     async def _register_new_chatbot(self):
         try:
@@ -667,6 +716,7 @@ async def get_chatbot_response(req: HttpRequest) -> HttpResponse:
             db = CosmosDB()
             await db.initialize()
             db.chatbot_container.upsert_item(body=newChatbot.to_dict())
+            logging.warning(f"New chatbot registered in cosmos")
         except Exception as e:
             raise DeploymentException(message=f"Unknown error {e}", deployment_stage="RegisterNewChatbot")
 
