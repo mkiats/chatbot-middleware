@@ -23,8 +23,8 @@ import {
 import { Chatbot } from './types/models';
 import { request } from 'http';
 
-const DOMAIN_URL = process.env.NEXT_PUBLIC_LOCAL_DOMAIN
-// const DOMAIN_URL = process.env.NEXT_PUBLIC_AZURE_DOMAIN;
+// const DOMAIN_URL = process.env.NEXT_PUBLIC_LOCAL_DOMAIN
+const DOMAIN_URL = process.env.NEXT_PUBLIC_AZURE_DOMAIN;
 
 export async function getAllChatbots(): Promise<GetAllChatbotsResponse> {
 	try {
