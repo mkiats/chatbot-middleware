@@ -642,7 +642,7 @@ test
             deploy_headers = {
                 'Authorization': f'Basic {kudu_credentials}',
                 'Content-Type': 'application/zip',
-                'x-ms-build-remote': 'true'  # Signal to use Oryx build
+                'x-ms-build-remote': 'true'
             }
 
 
@@ -681,6 +681,7 @@ test
                     function_app_name
                     )
         settings.properties['SCM_DO_BUILD_DURING_DEPLOYMENT'] = "true"
+        settings.properties['ENABLE_ORYX_BUILD'] = "true"
         settings.properties.pop('WEBSITE_RUN_FROM_PACKAGE')
 
         self.web_client.web_apps.update_application_settings(
