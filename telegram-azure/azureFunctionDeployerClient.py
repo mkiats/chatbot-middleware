@@ -26,7 +26,8 @@ class AzureFunctionDeployerClient:
     def __init__(self):
         self.name = ""
         self.version = ""
-        self.function_app_name = ""
+        # self.function_app_name = ""
+        self.unique_function_app_name = ""
         self.endpoint = ""
         self.description = "Some description"
         self.developer_id = "123123123"
@@ -90,13 +91,13 @@ class AzureFunctionDeployerClient:
                 function_app_files = await self._create_required_azure_files(validated_data)
                 zipped_function_app_files = await self._create_in_memory_zip(function_app_files)
                 await self._get_deployment_parameters(req)
-                self.function_app_name = await self._generate_unique_name(self.name)
+                self.unique_function_app_name = await self._generate_unique_name(self.name)
 
                 # Deploy function app with code
                 result = await self._deploy_function_app(
-                    function_app_name=self.function_app_name,
                     function_app_files=zipped_function_app_files
-                )                
+                )
+                # await self._enable_run_from_package()                
                 if result:
                     self.endpoint = f"{result}/api/chat/query"
                     await self._register_new_chatbot()
@@ -539,7 +540,6 @@ test
 
     async def _deploy_function_app(
         self,
-        function_app_name: str,
         function_app_files: bytes,
         python_version: str = "3.11",
         runtime_name: str = "python",
@@ -579,7 +579,7 @@ test
             # Create function app
             poller = self.web_client.web_apps.begin_create_or_update(
                 resource_group_name=self.resource_group_name,
-                name=function_app_name,
+                name=self.unique_function_app_name,
                 site_envelope={
                     "location": self.location,
                     "kind": "functionapp",
@@ -610,16 +610,16 @@ test
                                 },
                                 {
                                     "name": "WEBSITE_CONTENTSHARE",
-                                    "value": function_app_name.lower()
+                                    "value": self.unique_function_app_name.lower()
                                 },
                                 {
                                     "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
                                     "value": self.app_insights_name
                                 },
-                                {
-                                    "name": "WEBSITE_RUN_FROM_PACKAGE",
-                                    "value": "1"
-                                }
+                                # {
+                                #     "name": "WEBSITE_RUN_FROM_PACKAGE",
+                                #     "value": "1"
+                                # }
                             ]
                         }
                     }
@@ -629,16 +629,16 @@ test
             function_app = poller.result()
             logging.warning(f"Function app created")
 
-            await self._enable_oryx_build(function_app_name=function_app_name)
+            await self._enable_oryx_build()
 
             # Get publishing credentials
             kudu_credentials = self.web_client.web_apps.begin_list_publishing_credentials(
                 self.resource_group_name,
-                function_app_name
+                self.unique_function_app_name
             ).result()
 
             # Upload zip file using kudu zip deploy
-            deploy_url = f"https://{function_app_name}.scm.azurewebsites.net/api/zipdeploy"
+            deploy_url = f"https://{self.unique_function_app_name}.scm.azurewebsites.net/api/zipdeploy"
             deploy_headers = {
                 'Authorization': f'Basic {kudu_credentials}',
                 'Content-Type': 'application/zip',
@@ -657,17 +657,32 @@ test
             if response.status_code not in (200, 202):
                 raise Exception(f"Deployment failed with status {response.status_code}: {response.text}")
 
-            logging.warning(f"Successfully deployed code to function app: {function_app_name}")
+            logging.warning(f"Successfully deployed code to function app: {self.unique_function_app_name}")
             return f"https://{function_app.default_host_name}"
             
         except Exception as e:
             logging.error(f"Error deploying function app: {e}")
             raise DeploymentException(message=f"Error deploying function app: {str(e)}", deployment_stage="DeployFunctionApp")
 
-    async def _enable_oryx_build(self, function_app_name):
+    # async def _enable_run_from_package(self):
+    #     settings = self.web_client.web_apps.list_application_settings(
+    #                 self.resource_group_name,
+    #                 self.unique_function_app_name
+    #                 )
+    #     settings.properties['WEBSITE_RUN_FROM_PACKAGE'] = "1"
+
+    #     self.web_client.web_apps.update_application_settings(
+    #         self.resource_group_name,
+    #         self.unique_function_app_name,
+    #         settings
+    #     )
+    #     sleep(5)
+    #     logging.warning(f"RUN_FROM_PACKAGE enabled")
+
+    async def _enable_oryx_build(self):
         self.web_client.web_apps.update_configuration(
             self.resource_group_name,
-            function_app_name,
+            self.unique_function_app_name,
             {
                 "scm_type": "None",
                 "build_properties": {
@@ -678,18 +693,18 @@ test
         )
         settings = self.web_client.web_apps.list_application_settings(
                     self.resource_group_name,
-                    function_app_name
+                    self.unique_function_app_name
                     )
         settings.properties['SCM_DO_BUILD_DURING_DEPLOYMENT'] = "true"
         settings.properties['ENABLE_ORYX_BUILD'] = "true"
-        settings.properties.pop('WEBSITE_RUN_FROM_PACKAGE')
+        # settings.properties.pop('WEBSITE_RUN_FROM_PACKAGE')
 
         self.web_client.web_apps.update_application_settings(
             self.resource_group_name,
-            function_app_name,
+            self.unique_function_app_name,
             settings
         )
-        sleep(10)
+        sleep(5)
         logging.warning(json.dumps(settings.properties))
         logging.warning(f"Oryx build enabled")
 
