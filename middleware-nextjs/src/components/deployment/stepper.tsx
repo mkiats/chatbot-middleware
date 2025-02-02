@@ -9,7 +9,7 @@ const Stepper: React.FC<StepperProps> = ({ currentStep, stepList }) => {
 			<div className='relative flex justify-between'>
 				<div className='absolute top-3 left-0 h-px bg-gray-200 w-full' />
 				<div
-					className='absolute top-3 left-0 h-px bg-black transition-all duration-200'
+					className='absolute top-3 left-0 h-px bg-foreground transition-all duration-200'
 					style={{
 						width: `${((currentStep - 1) / (stepList.length - 1)) * 100}%`,
 					}}
@@ -28,13 +28,13 @@ const Stepper: React.FC<StepperProps> = ({ currentStep, stepList }) => {
 							<div
 								className={`
                     w-6 h-6 rounded-full border
-                    ${isCompleted || isActive ? 'border-black bg-black' : 'border-gray-300 bg-white'}
+                    ${isCompleted || isActive ? 'border-4 border-secondary bg-accent' : 'border-gray-300 bg-white'}
                   `}
 							>
 								<span
 									className={`
                       absolute top-8 text-xs font-normal whitespace-nowrap
-                      ${isActive ? 'text-black' : 'text-gray-500'}
+                      ${isActive ? 'text-foreground font-semibold' : 'text-muted-foreground font-semibold'}
                     `}
 								>
 									{step}

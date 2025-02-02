@@ -87,7 +87,7 @@ export function DataTable<TData, TValue>({
 				/>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button variant='outline' className='ml-auto'>
+						<Button variant='outline' className='ml-auto bg-secondary text-secondary-foreground'>
 							Columns
 						</Button>
 					</DropdownMenuTrigger>
@@ -119,7 +119,7 @@ export function DataTable<TData, TValue>({
 							<TableRow key={headerGroup.id}>
 								{headerGroup.headers.map((header) => {
 									return (
-										<TableHead key={header.id}>
+										<TableHead key={header.id} className='bg-secondary text-secondary-foreground'>
 											{header.isPlaceholder
 												? null
 												: flexRender(

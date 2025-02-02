@@ -26,9 +26,9 @@ export const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
 	);
 
 	return (
-		<ScrollArea className='h-full pr-4'>
+		<ScrollArea className='h-fit pr-4'>
 			<div className={`space-y-6 max-w-2xl mx-auto ${className}`.trim()}>
-				<div className='bg-gray-50 p-6 rounded-lg space-y-4'>
+				<div className='bg-muted text-muted-foreground p-6 rounded-lg space-y-4 border border-muted-foreground'>
 					<h2 className='text-xl font-semibold'>{title}</h2>
 					<div className='prose prose-sm'>
 						<p>Please read and accept the following terms:</p>
@@ -55,7 +55,7 @@ export const TermsAndConditions: React.FC<TermsAndConditionsProps> = ({
 				<button
 					onClick={handleAccept}
 					type='button'
-					className='w-full bg-black text-white py-2 rounded hover:bg-gray-800'
+					className='w-full bg-accent text-accent-foreground py-2 rounded border border-accent-foreground'
 				>
 					{buttonText}
 				</button>

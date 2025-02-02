@@ -31,6 +31,7 @@ export const useInfrastructurePolling = (statusQueryUri: string | null) => {
             }
 
             const data: InfrastructureStatusResponse = await response.json();
+            console.log(JSON.stringify(data));
             
             // Map the status from the response to TerraformStatus
             if (data.output?.status) {

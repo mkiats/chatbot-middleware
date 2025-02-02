@@ -152,7 +152,7 @@ export const columns: ColumnDef<Chatbot>[] = [
 							Copy chatbot endpoint
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem onClick={() => {router.push(`/dashboard/${chatbot.id}`)}} >View chatbot details</DropdownMenuItem>
+						<DropdownMenuItem className='text-primary' onClick={() => {router.push(`/dashboard/${chatbot.id}`)}} >View chatbot details</DropdownMenuItem>
 						<DropdownMenuItem onClick={handleActivate} >Set active</DropdownMenuItem>
 						<DropdownMenuItem onClick={handleDeactivate}>Set inactive</DropdownMenuItem>
 						<DropdownMenuItem>Terminate instance</DropdownMenuItem>
