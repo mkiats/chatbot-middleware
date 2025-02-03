@@ -4,6 +4,7 @@ import logging
 import os
 import httpx
 import json
+import aiohttp
 
 def _parse_payload(payload: dict) -> Tuple[dict, str, str, dict, str]:
     message = payload.get('message', {})
@@ -59,17 +60,18 @@ async def _execute_url(method, params="", json="") -> HttpResponse:
 
 async def _query_chatbot(chatbot_endpoint: str, user_query: str) -> str:
     logging.warning("Executing _query_chatbot...")
-    async with httpx.AsyncClient() as client:
-        try:
-            request_payload = {
-                'query': user_query
-                }
-            logging.warning(f"{chatbot_endpoint}, {json.dumps(request_payload)}")
-            response = await client.post(f'{chatbot_endpoint}', json=request_payload)
-            return response.text
-        except Exception as e:
-            logging.error(f"Error executing _query_chatbot: {str(e)}")
-            raise Exception("Error occured in query chatbot")
+    try:
+        request_payload = {
+            'query': user_query
+        }
+        logging.warning(f"{chatbot_endpoint}, {json.dumps(request_payload)}")
+        
+        async with aiohttp.request('POST', chatbot_endpoint, json=request_payload) as response:
+            return await response.text()
+            
+    except Exception as e:
+        logging.error(f"Error executing _query_chatbot: {str(e)}")
+        raise Exception("Error occurred in query chatbot")
 
 
 async def _echo_message(chat_id: str, text: str) -> HttpResponse:
