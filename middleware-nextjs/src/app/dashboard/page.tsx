@@ -1,3 +1,5 @@
+"use client"
+
 import { getAllChatbots } from '@/lib/api';
 import { columns } from '../../components/dashboard/columns';
 import { DataTable } from '../../components/dashboard/data-table';

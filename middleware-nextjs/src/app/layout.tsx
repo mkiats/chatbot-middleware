@@ -70,7 +70,7 @@ export default function RootLayout({
 										orientation='vertical'
 										className='mr-2 h-4'
 									/>
-									<Breadcrumb>
+									{/* <Breadcrumb>
 										<BreadcrumbList>
 											<BreadcrumbItem className='hidden md:block'>
 												<BreadcrumbLink href='#'>
@@ -84,7 +84,7 @@ export default function RootLayout({
 												</BreadcrumbPage>
 											</BreadcrumbItem>
 										</BreadcrumbList>
-									</Breadcrumb>
+									</Breadcrumb> */}
 									<div className='flex justify-self-end items-center pr-4'>
 										<ModeToggle />
 									</div>

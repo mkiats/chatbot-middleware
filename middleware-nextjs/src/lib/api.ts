@@ -23,8 +23,8 @@ import {
 import { Chatbot } from './types/models';
 import { request } from 'http';
 
-const DOMAIN_URL = process.env.NEXT_PUBLIC_LOCAL_DOMAIN
-// const DOMAIN_URL = process.env.NEXT_PUBLIC_AZURE_DOMAIN;
+// const DOMAIN_URL = process.env.NEXT_PUBLIC_LOCAL_DOMAIN
+const DOMAIN_URL = process.env.NEXT_PUBLIC_AZURE_DOMAIN;
 
 export async function getAllChatbots(): Promise<GetAllChatbotsResponse> {
 	try {
@@ -36,7 +36,9 @@ export async function getAllChatbots(): Promise<GetAllChatbotsResponse> {
 		return response.json();
 	} catch (error) {
 		console.error('Error fetching chatbots:', error);
-		throw error;
+		return {
+			'chatbots': []
+		};
 	}
 }
 
@@ -54,7 +56,9 @@ export async function getChatbotsByDeveloperId(
 		return response.json();
 	} catch (error) {
 		console.error('Error fetching chatbots:', error);
-		throw error;
+		return {
+			'chatbots': []
+		};
 	}
 }
 
@@ -77,7 +81,9 @@ export async function getChatbotById(
 		return response.json();
 	} catch (error) {
 		console.error('Error fetching chatbots:', error);
-		throw error;
+		return {
+			'chatbots': []
+		};
 	}
 }
 

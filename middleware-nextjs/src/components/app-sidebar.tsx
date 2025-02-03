@@ -38,7 +38,7 @@ const data = {
 		},
 		{
 			title: 'Modules',
-			url: '#',
+			url: '',
 			items: [
 				{
 					title: 'Dashboard',

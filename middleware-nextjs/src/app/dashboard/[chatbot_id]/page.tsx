@@ -35,7 +35,7 @@ const DashboardDetails = () => {
 					}
 				}
 			} catch (err) {
-				setError('Failed to fetch chatbot details');
+				setError(err instanceof Error ? err.message : 'Failed to fetch chatbot details');
 			} finally {
 				setIsLoading(false);
 			}
@@ -57,14 +57,14 @@ const DashboardDetails = () => {
 				chatbot_status: chatbotData.status,
 				chatbot_telegram_support: chatbotData.telegram_support
 			};
-			const response = await updateChatbotById(updateChatbotByIdRequest);
+			await updateChatbotById(updateChatbotByIdRequest);
 			setIsEditing(false);
 			window.location.reload();
 		} catch (err) {
-			console.error('Error updating chatbot:', err);
 			setError(
 				err instanceof Error ? err.message : 'Failed to update chatbot',
 			);
+			console.error('Error updating chatbot:', error);
 		}
 	};
 

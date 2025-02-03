@@ -6,7 +6,6 @@ import {
 import ChatbotCreationFormValidation from '@/components/deployment/chatbotCreationFormValidation';
 import Stepper from '@/components/deployment/stepper';
 import { TermsAndConditions } from '@/components/deployment/termsAndConditions';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import {
 	deployApplication,
@@ -25,8 +24,8 @@ const DeploymentPage: React.FC = () => {
 		DeploymentMessage[]
 	>([]);
 
-	const [currentProcess, setCurrentProcess] = useState<number>(0);
-	const [hasError, setHasError] = useState<boolean>(false);
+	// const [currentProcess, setCurrentProcess] = useState<number>(0);
+	// const [hasError, setHasError] = useState<boolean>(false);
 	const [statusQueryUri, setStatusQueryUri] = useState<string | null>(null);
 	const stepList = [
 		'Terms & Conditions',
@@ -56,10 +55,18 @@ const DeploymentPage: React.FC = () => {
 		}
 	}, [terraformStatus, formData]);
 
+	useEffect(() => {
+		return () => {
+		  if (statusQueryUri) {
+			stopPolling();
+		  }
+		};
+	  }, [stopPolling]);
+
 	// Handle polling errors
 	useEffect(() => {
 		if (pollingError) {
-			setHasError(true);
+			// setHasError(true);
 			setDeploymentMessages((prev) => {
 				const newMessages = [...prev];
 				const infraIndex = newMessages.findIndex((msg) =>
@@ -303,7 +310,7 @@ const DeploymentPage: React.FC = () => {
 				return newMessages;
 			});
 		} catch (error) {
-			setHasError(true);
+			// setHasError(true);
 			setDeploymentMessages((prev) => {
 				const newMessages = [...prev];
 				newMessages[newMessages.length - 1] = {
@@ -321,8 +328,8 @@ const DeploymentPage: React.FC = () => {
 
 		setCurrentStep(4);
 		setDeploymentMessages([]);
-		setCurrentProcess(0);
-		setHasError(false);
+		// setCurrentProcess(0);
+		// setHasError(false);
 		setStatusQueryUri(null);
 
 		try {
@@ -391,7 +398,7 @@ const DeploymentPage: React.FC = () => {
 				);
 			}
 		} catch (error) {
-			setHasError(true);
+			// setHasError(true);
 			setDeploymentMessages((prev) => {
 				const newMessages = [...prev];
 				const currentMessage = newMessages[newMessages.length - 1];
