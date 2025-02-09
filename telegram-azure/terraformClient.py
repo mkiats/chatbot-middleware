@@ -1,4 +1,6 @@
 import logging
+from azure.identity import ClientSecretCredential
+from azure.storage.blob import BlobServiceClient
 from typing import Dict, Any, List, Tuple
 import subprocess
 import json
@@ -10,6 +12,17 @@ import aiofiles
 class TerraformExecutor:
    def __init__(self, working_dir: str):
        self.working_dir = working_dir
+       credential = ClientSecretCredential(
+                    client_id=os.getenv("CLIENT_ID"),
+                    client_secret=os.getenv("CLIENT_SECRET"),
+                    tenant_id=os.getenv("TENANT_ID")
+                )
+       blob_account_url = os.environ.get('AZURE_STORAGE_ACCOUNT_URL')
+       self.blob_service_client = BlobServiceClient(
+                account_url=blob_account_url,
+                credential=credential
+            )
+       self.container_name = os.environ.get('TERRAFORM_CONTAINER_NAME', 'mkiats-fyp-terraform')
 
    async def _run_command(self, command: list) -> tuple[int, str, str]:
        """
@@ -28,12 +41,13 @@ class TerraformExecutor:
         """
         Create terraform.tfvars.json file from variables
         """
-        tfvars_path = os.path.join(self.working_dir, "terraform.tfvars.json")
-        logging.warning(f"Attempting to write tfvars to: {tfvars_path}")
+        # os.makedirs(self.working_dir, exist_ok=True)
+        # tfvars_path = os.path.join(self.working_dir, "terraform.tfvars.json")
+        # logging.warning(f"Attempting to write tfvars to: {tfvars_path}")
         logging.warning(f"Current working directory: {os.getcwd()}")
         logging.warning(f"Directory exists: {os.path.exists(self.working_dir)}")
-        async with aiofiles.open(tfvars_path, 'w') as f:
-            await f.write(json.dumps(variables, indent=2))
+        # async with aiofiles.open(tfvars_path, 'w') as f:
+        #     await f.write(json.dumps(variables, indent=2))
 
    async def init(self) -> tuple[bool, str]:
        """

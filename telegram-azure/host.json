@@ -5,7 +5,8 @@
             "hubName": "TimeoutHub",
             "storageProvider": {
                 "connectionStringName": "AzureWebJobsStorage"
-            }
+            },
+            "useGracefulShutdown": true
         }
     },
   "logging": {
