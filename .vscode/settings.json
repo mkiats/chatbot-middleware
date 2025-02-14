@@ -8,6 +8,4 @@
     "azureFunctions.projectLanguageModel": 2,
     "explorer.sortOrder": "type",
     "explorer.sortOrderLexicographicOptions": "unicode",
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
 }

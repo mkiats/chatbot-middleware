@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 import logging
-from _common import _command_mapper
 from exceptions import EntityException
 from typing import Optional, Dict, Union
 from enum import Enum
@@ -308,16 +307,6 @@ class Chatbot:
             )
         except ValueError as e:
             raise EntityException(str(e), "Chatbot", "data_conversion")
-
-class ChatbotCallbackData:
-    @staticmethod
-    def create_callback_str(command: str, chatbot_id: str):
-       return f'{_command_mapper(command, False)}_{chatbot_id}'
-
-    @staticmethod
-    def destructure_callback_str(callback_string: str) -> tuple[str, str]:
-        [short_command_str, chatbot_id] = callback_string.split('_', maxsplit=1)
-        return short_command_str, chatbot_id
 
 class inline_keyboard_button:
     def __init__(self, text: str, callback_data: str = None):

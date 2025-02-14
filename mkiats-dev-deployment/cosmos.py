@@ -1,7 +1,7 @@
 import logging
 from azure.cosmos import CosmosClient, ContainerProxy, PartitionKey
 from azure.cosmos.exceptions import CosmosHttpResponseError
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 import os
 
 class CosmosDB:

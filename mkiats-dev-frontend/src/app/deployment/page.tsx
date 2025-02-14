@@ -35,248 +35,17 @@ const DeploymentPage: React.FC = () => {
 		'Deployment',
 	];
 
-	// Use the polling hook
-	const {
-		status: terraformStatus,
-		isPolling,
-		error: pollingError,
-		output: terraformOutput,
-		startPolling,
-		stopPolling,
-	} = useInfrastructurePolling(statusQueryUri);
-
-	useEffect(() => {
-		if (terraformStatus && formData?.deployment_type === 'terraform') {
-			updateInfrastructureStatus(terraformStatus);
-
-			// Only proceed with application deployment for terraform type
-			if (terraformStatus === TerraformStatus.COMPLETE) {
-				deployApp();
-			}
-		}
-	}, [terraformStatus, formData]);
-
-	useEffect(() => {
-		return () => {
-			if (statusQueryUri) {
-				stopPolling();
-			}
-		};
-	}, [stopPolling]);
-
-	// Handle polling errors
-	useEffect(() => {
-		if (pollingError) {
-			// setHasError(true);
-			setDeploymentMessages((prev) => {
-				const newMessages = [...prev];
-				const infraIndex = newMessages.findIndex((msg) =>
-					msg.message.includes('Infrastructure'),
-				);
-				if (infraIndex !== -1) {
-					newMessages[infraIndex] = {
-						...newMessages[infraIndex],
-						status: 'error',
-						message: `Infrastructure deployment failed: ${pollingError}`,
-					};
-				}
-				return newMessages;
-			});
-		}
-	}, [pollingError]);
-
-	function updateInfrastructureStatus(terraformStatus: TerraformStatus) {
-		setDeploymentMessages((prev) => {
-			const newMessages = [...prev];
-			const infraIndex = newMessages.findIndex((msg) =>
-				msg.message.includes('Infrastructure deployment'),
-			);
-
-			if (infraIndex === -1) return newMessages;
-
-			switch (terraformStatus) {
-				case TerraformStatus.PENDING:
-					newMessages[infraIndex] = {
-						...newMessages[infraIndex],
-						status: 'pending',
-						subMessages: [
-							{
-								message:
-									'Preparing infrastructure deployment...',
-								status: 'pending',
-							},
-						],
-					};
-					break;
-
-				case TerraformStatus.CREATING_VARS:
-					newMessages[infraIndex] = {
-						...newMessages[infraIndex],
-						status: 'pending',
-						subMessages: [
-							{
-								message: 'Preparation complete',
-								status: 'success',
-							},
-							{
-								message: 'Creating Terraform variables...',
-								status: 'pending',
-							},
-						],
-					};
-					break;
-
-				case TerraformStatus.INITIALIZING:
-					newMessages[infraIndex] = {
-						...newMessages[infraIndex],
-						status: 'pending',
-						subMessages: [
-							{
-								message: 'Preparation complete',
-								status: 'success',
-							},
-							{
-								message: 'Variables created successfully',
-								status: 'success',
-							},
-							{
-								message: 'Initializing Terraform...',
-								status: 'pending',
-							},
-						],
-					};
-					break;
-
-				case TerraformStatus.PLANNING:
-					newMessages[infraIndex] = {
-						...newMessages[infraIndex],
-						status: 'pending',
-						subMessages: [
-							{
-								message: 'Preparation complete',
-								status: 'success',
-							},
-							{
-								message: 'Variables created successfully',
-								status: 'success',
-							},
-							{
-								message: 'Terraform initialized',
-								status: 'success',
-							},
-							{
-								message: 'Planning infrastructure changes...',
-								status: 'pending',
-							},
-						],
-					};
-					break;
-
-				case TerraformStatus.APPLYING:
-					newMessages[infraIndex] = {
-						...newMessages[infraIndex],
-						status: 'pending',
-						subMessages: [
-							{
-								message: 'Preparation complete',
-								status: 'success',
-							},
-							{
-								message: 'Variables created successfully',
-								status: 'success',
-							},
-							{
-								message: 'Terraform initialized',
-								status: 'success',
-							},
-							{
-								message: 'Infrastructure plan generated',
-								status: 'success',
-							},
-							{
-								message: 'Applying infrastructure changes...',
-								status: 'pending',
-							},
-						],
-					};
-					break;
-
-				case TerraformStatus.COMPLETE:
-					newMessages[infraIndex] = {
-						...newMessages[infraIndex],
-						status: 'success',
-						message: 'Infrastructure deployment successful!',
-						subMessages: [
-							{
-								message: 'Preparation complete',
-								status: 'success',
-							},
-							{
-								message: 'Variables created successfully',
-								status: 'success',
-							},
-							{
-								message: 'Terraform initialized',
-								status: 'success',
-							},
-							{
-								message: 'Infrastructure plan generated',
-								status: 'success',
-							},
-							{
-								message:
-									'Infrastructure changes applied successfully',
-								status: 'success',
-							},
-						],
-					};
-					break;
-
-				case TerraformStatus.FAILED:
-					newMessages[infraIndex] = {
-						...newMessages[infraIndex],
-						status: 'error',
-						message: 'Infrastructure deployment failed',
-						subMessages:
-							prev[infraIndex].subMessages?.map((msg) => ({
-								...msg,
-								status:
-									msg.status === 'pending'
-										? 'error'
-										: msg.status,
-							})) || [],
-					};
-					break;
-
-				default:
-					console.error('Unknown TerraformStatus:', terraformStatus);
-					newMessages[infraIndex] = {
-						...newMessages[infraIndex],
-						status: 'error',
-						message: 'Unknown infrastructure deployment status',
-						subMessages: [
-							{
-								message:
-									'Received unexpected status from Terraform',
-								status: 'error',
-							},
-						],
-					};
-			}
-
-			return newMessages;
-		});
-	}
-
 	const deployApp = async () => {
 		if (!formData) return;
 
 		try {
+			const deployChatbotRequest: DeployChatbotRequest = {
+				chatbotFormData: formData
+			};
+
+			// Step 1 of deplopyment: Validation
 			const deploymentType = formData.deployment_type;
-			const deploymentMessage =
-				deploymentType === 'terraform'
-					? 'Deploying application...'
-					: 'Deploying application resources...';
+			let deploymentMessage = "Validating chatbot details";
 
 			setDeploymentMessages((prev) => [
 				...prev,
@@ -285,31 +54,35 @@ const DeploymentPage: React.FC = () => {
 					status: 'pending',
 				},
 			]);
-
-			const deployChatbotRequest: DeployChatbotRequest = {
-				chatbotFormData: formData,
-			};
-
+			await validateDeployment(deployChatbotRequest);
+			
+			if (deploymentType==="terraform")
+				{// Step 2 of deployment: Infrastructure
+			deploymentMessage = "Initialising infrastructure"
+			setDeploymentMessages((prev) => [
+				...prev,
+				{
+					message: deploymentMessage,
+					status: 'pending',
+				},
+			]);
+			await deployInfrastructure(deployChatbotRequest);}
+			
+			// Step 3 of deployment: Azure deployment
+			deploymentMessage = "Deploying to azure"
+			setDeploymentMessages((prev) => [
+				...prev,
+				{
+					message: deploymentMessage,
+					status: 'pending',
+				},
+			]);
 			const appResponse = await deployApplication(deployChatbotRequest);
 
 			if (!appResponse.endpoint) {
 				throw new Error('Application deployment failed.');
 			}
 
-			const successMessage =
-				deploymentType === 'terraform'
-					? 'Application deployment successful!'
-					: 'Application resources deployed successfully!';
-
-			setDeploymentMessages((prev) => {
-				const newMessages = [...prev];
-				newMessages[newMessages.length - 1] = {
-					...newMessages[newMessages.length - 1],
-					status: 'success',
-					message: successMessage,
-				};
-				return newMessages;
-			});
 			setDeploymentDone(true);
 		} catch (error) {
 			// setHasError(true);
@@ -331,75 +104,9 @@ const DeploymentPage: React.FC = () => {
 
 		setCurrentStep(4);
 		setDeploymentMessages([]);
-		// setCurrentProcess(0);
-		// setHasError(false);
-		setStatusQueryUri(null);
 
 		try {
-			// Step 1: Validation for all deployment types
-			setDeploymentMessages([
-				{
-					message: 'Validating deployment parameters...',
-					status: 'pending',
-				},
-			]);
-
-			const deployChatbotRequest: DeployChatbotRequest = {
-				chatbotFormData: formData,
-			};
-
-			const validationResponse =
-				await validateDeployment(deployChatbotRequest);
-			console.log(JSON.stringify(validationResponse));
-			if (!validationResponse.validation) {
-				throw new Error(
-					'Validation failed. Please check your deployment parameters.',
-				);
-			}
-
-			setDeploymentMessages((prev) => [
-				{
-					...prev[0],
-					status: 'success',
-					message: 'Validation successful!',
-				},
-			]);
-
-			// Step 2: Handle different deployment paths based on deployment_type
-			const deploymentType = formData.deployment_type;
-
-			if (deploymentType === 'terraform') {
-				// Terraform flow: validate -> infrastructure -> application
-				setDeploymentMessages((prev) => [
-					...prev,
-					{
-						message: 'Infrastructure deployment in progress...',
-						status: 'pending',
-						subMessages: [],
-					},
-				]);
-
-				const infraResponse =
-					await deployInfrastructure(deployChatbotRequest);
-
-				// Start polling with the status query URI
-				setStatusQueryUri(infraResponse.statusQueryGetUri);
-				startPolling();
-
-				// Note: Application deployment will be triggered by the useEffect hook
-				// when terraform status becomes COMPLETE
-			} else if (
-				deploymentType === 'managed' ||
-				deploymentType === 'custom'
-			) {
-				// Managed/Custom flow: validate -> application
-				await deployApp();
-			} else {
-				// Type guard for unexpected deployment types
-				throw new Error(
-					`Unsupported deployment type: ${deploymentType}`,
-				);
-			}
+			await deployApp();
 		} catch (error) {
 			// setHasError(true);
 			setDeploymentMessages((prev) => {
@@ -501,6 +208,8 @@ const DeploymentPage: React.FC = () => {
 
 	const handleNewDeployment = (): void => {
 		setCurrentStep(1);
+		setFormData(null);
+		setDeploymentMessages([]);
 		setDeploymentDone(false);
 	};
 
@@ -537,8 +246,8 @@ const DeploymentPage: React.FC = () => {
 								renderDeploymentMessage(msg, index),
 							)}
 						</div>
-						{terraformStatus === TerraformStatus.COMPLETE ||
-							(deploymentDone === true && (
+						
+							{deploymentDone === true && (
 								<button
 									onClick={handleNewDeployment}
 									type='button'
@@ -546,7 +255,7 @@ const DeploymentPage: React.FC = () => {
 								>
 									Deploy another chatbot
 								</button>
-							))}
+							)}
 					</div>
 				)}
 			</div>

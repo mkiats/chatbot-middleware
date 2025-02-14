@@ -25,8 +25,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 // First, let's define the ChatbotStatus enum
 export const ChatbotStatusEnum = z.enum(['inactive', 'active', 'debug']);
-export const DeploymentTypeEnum = z.enum(['managed', 'custom']);
-// export const DeploymentTypeEnum = z.enum(['managed', 'custom', 'terraform']);
+// export const DeploymentTypeEnum = z.enum(['managed', 'custom']);
+export const DeploymentTypeEnum = z.enum(['managed', 'custom', 'terraform']);
 
 // File validation schema
 const MAX_FILE_SIZE = 500 * 1024 * 1024; // 50MB
@@ -155,14 +155,14 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 			telegram_support: true,
 			document: undefined,
 			deployment_type: 'managed', // Default to managed type
-			// subscription_id: process.env.NEXT_PUBLIC_subscription_id,
-			// location: 'southeastasia',
-			// resource_group_name: 'terraform-chatbot-deployment',
-			// app_insights_name: 'terraform-chatbot-deployment',
-			// storage_account_name: process.env.NEXT,
-			// client_id: process.env.NEXT_PUBLIC_client_id,
-			// client_secret: process.env.NEXT_PUBLIC_client_secret,
-			// tenant_id: process.env.NEXT_PUBLIC_tenant_id,
+			subscription_id: process.env.NEXT_PUBLIC_subscription_id,
+			location: 'southeastasia',
+			resource_group_name: 'terraform-chatbot-deployment',
+			app_insights_name: 'terraform-chatbot-deployment',
+			storage_account_name: process.env.NEXT_PUBLIC_storage_account_name,
+			client_id: process.env.NEXT_PUBLIC_client_id,
+			client_secret: process.env.NEXT_PUBLIC_client_secret,
+			tenant_id: process.env.NEXT_PUBLIC_tenant_id,
 		},
 	});
 

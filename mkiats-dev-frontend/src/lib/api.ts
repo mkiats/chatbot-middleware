@@ -143,7 +143,8 @@ export async function validateDeployment(
 			'deployment_parameter',
 			JSON.stringify(deploymentParams),
 		);
-		const response = await fetch(`${DOMAIN_URL}/api/chatbots/deploy/validate`, {
+		let newUrl = "https://mkiats-dev-deployment.azurewebsites.net/api/chatbots/deploy/validate"
+		const response = await fetch(`${newUrl}`, {
 			method: 'POST',
 			body: requestFormData,
 		});
@@ -171,26 +172,20 @@ export async function deployInfrastructure(
 	requestObject: DeployChatbotRequest,
 ): Promise<DeployInfrastructureResponse> {
 	try {
-		const requestFormData = new FormData();
 		const chatbotFormData = requestObject.chatbotFormData;
-
-		// Append the file with the specific key 'chatbot_file'
-		if (chatbotFormData.document) {
-			requestFormData.append('chatbot_file', chatbotFormData.document);
-		}
-
-		// Extract file from formData
 		const { document, ...deploymentParams } = chatbotFormData;
 
-		// Append all other fields under 'deployment_parameter'
-		requestFormData.append(
-			'deployment_parameter',
-			JSON.stringify(deploymentParams),
-		);
 		console.log(`${DOMAIN_URL}/api/chatbots/deploy/infrastructure`)
-		const response = await fetch(`${DOMAIN_URL}/api/chatbots/deploy/infrastructure`, {
+		let newUrl: string = "https://mkiats-dev-terraform.victoriousriver-374dbb10.southeastasia.azurecontainerapps.io/deploy/infrastructure"
+		// let newUrl: string = "http://0.0.0.0:8000/deploy/infrastructure"
+		// const response = await fetch(`${DOMAIN_URL}/api/chatbots/deploy/infrastructure`, {
+		console.log(JSON.stringify(deploymentParams));
+		const response = await fetch(`${newUrl}`, {
 			method: 'POST',
-			body: requestFormData,
+			headers: {
+				'Content-Type': 'application/json'  // This header is important
+			},
+			body: JSON.stringify(deploymentParams),
 		});
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
@@ -224,7 +219,8 @@ export async function deployApplication(
 			'deployment_parameter',
 			JSON.stringify(deploymentParams),
 		);
-		const response = await fetch(`${DOMAIN_URL}/api/chatbots/deploy/application`, {
+		let newUrl = "https://mkiats-dev-deployment.azurewebsites.net/api/chatbots/deploy/application"
+		const response = await fetch(`${newUrl}`, {
 			method: 'POST',
 			body: requestFormData,
 		});

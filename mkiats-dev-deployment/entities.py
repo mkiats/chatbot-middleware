@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 import logging
-from _common import _command_mapper
 from exceptions import EntityException
 from typing import Optional, Dict, Union
 from enum import Enum
@@ -8,74 +7,6 @@ from uuid import uuid4
 import json
 import time
 import re
-
-class TerraformStatus:
-    PENDING = "pending"
-    CREATING_VARS = "creating_vars"
-    INITIALIZING = "initializing"
-    PLANNING = "planning"
-    APPLYING = "applying"
-    COMPLETE = "complete"
-    FAILED = "failed"
-
-
-class User:
-    def __init__(
-        self,
-        id: None,
-        full_name: Optional[str] = None,
-        email: Optional[str] = None,
-        selected_chatbot_id: Optional[str] = None,
-        is_querying: bool = False,
-        created_at: Optional[int] = None,
-        updated_at: Optional[int] = None
-    ):  
-        
-        self.id = str(id) if id else str(uuid4())
-        self.partition = self.id[:4]
-        self.full_name = full_name
-        self.email = email
-        self.selected_chatbot_id = selected_chatbot_id
-        self.is_querying = is_querying
-        current_time = int(time.time())
-        self.created_at = created_at if created_at else current_time
-        self.updated_at = updated_at if updated_at else current_time
-
-    def update_is_querying(self, is_querying_flag: bool = False) -> None:
-        self.is_querying = is_querying_flag
-
-    def to_dict(self) -> Dict:
-        """Convert user object to dictionary representation"""
-        return {
-            "id": str(self.id),
-            "partition": self.partition,
-            "full_name": self.full_name,
-            "email": self.email,
-            "selected_chatbot_id": self.selected_chatbot_id,
-            "is_querying": self.is_querying,
-            "created_at": self.created_at,
-            "updated_at": self.updated_at
-        }
-
-    @classmethod
-    def from_dict(cls, data: Dict) -> 'User':
-        """Create user object from dictionary data"""
-        if not data:
-            raise EntityException("Data dictionary is required", "User")
-            
-        try:
-            return cls(
-                id=data.get('id'),
-                full_name=data.get('full_name', ''),
-                email=data.get('email', ''),
-                selected_chatbot_id=data.get('selected_chatbot_id'),
-                is_querying=data.get("is_querying"),
-                created_at=data.get('created_at'),
-                updated_at=data.get('updated_at')
-            )
-        except ValueError as e:
-            raise EntityException(str(e), "User", "from_dict method")
-
 
 class ChatbotStatus(Enum):
     ACTIVE = "active"
@@ -261,25 +192,3 @@ class Chatbot:
             )
         except ValueError as e:
             raise EntityException(str(e), "Chatbot", "data_conversion")
-
-class ChatbotCallbackData:
-    @staticmethod
-    def create_callback_str(command: str, chatbot_id: str):
-       return f'{_command_mapper(command, False)}_{chatbot_id}'
-
-    @staticmethod
-    def destructure_callback_str(callback_string: str) -> tuple[str, str]:
-        [short_command_str, chatbot_id] = callback_string.split('_', maxsplit=1)
-        return short_command_str, chatbot_id
-
-class inline_keyboard_button:
-    def __init__(self, text: str, callback_data: str = None):
-        self.text = text
-        self.callback_data = callback_data
-
-    def to_dict(self) -> dict:
-        return {
-            "text": self.text,
-            "callback_data": self.callback_data
-        }
-    

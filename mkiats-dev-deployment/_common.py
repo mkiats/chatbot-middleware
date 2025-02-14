@@ -6,37 +6,6 @@ import httpx
 import json
 import aiohttp
 
-def _parse_payload(payload: dict) -> Tuple[dict, str, str, dict, str]:
-    message = payload.get('message', {})
-    callback_query = payload.get('callback_query', {})
-    chat_id = None
-    text = None
-    callback_data = None
-
-    if message:
-        chat_id = message['chat']['id']
-        text = message['text']
-    if callback_query:
-        chat_id = callback_query['message']['chat']['id']
-        callback_data = callback_query['data']
-    return message, chat_id, text, callback_query, callback_data
-
-
-def _command_mapper(command_string: str, reverse: bool = False) -> str:
-    command_map = {
-            "command_callback_select" : "select"
-        }
-    
-    reverse_command_map =  {
-            "select" : "command_callback_select"
-        }
-    
-    if not reverse:
-        return command_map.get(command_string, "")
-    else:
-        return reverse_command_map.get(command_string, "")
-
-# TODO
 async def _execute_url(method, params="", json="") -> HttpResponse:
     with httpx.Client() as client:
         URL = os.getenv("TELEGRAM_API_URL")
