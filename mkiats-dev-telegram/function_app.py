@@ -1,15 +1,23 @@
-import asyncio
-from typing import Any, AsyncGenerator, Dict, Generator
+from typing import Any
 from dotenv import load_dotenv
 from telegramClient import TelegramClient
 import azure.functions as func
 import logging
-import json
+import os
 
 # Instantiate function app
 load_dotenv()
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
+@app.route(route="health", auth_level=func.AuthLevel.ANONYMOUS)
+def get_health_status(req: func.HttpRequest) -> func.HttpResponse:
+    logging.warning(os.environ["TELEGRAM_BOT_TOKEN"])
+    logging.warning(os.environ["TELEGRAM_API_URL"])
+    logging.warning(os.environ["COSMOS_DB_CONNECTION_STRING"])
+    return func.HttpResponse(
+            "Function app health status: Up and running!",
+            status_code=200
+    )
 
 # Regular HTTP-triggered functions
 @app.route(route="telegram")
