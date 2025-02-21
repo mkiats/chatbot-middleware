@@ -2,17 +2,25 @@ from typing import Any
 from dotenv import load_dotenv
 from azureFunctionDeployerClient import AzureFunctionDeployerClient
 import azure.functions as func
-import azure.durable_functions as df
 import logging
+import os
 
 # Instantiate function app
 load_dotenv()
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
-
-@app.route(route="temp", auth_level=func.AuthLevel.ANONYMOUS)
-def process_temp_message(req: func.HttpRequest) -> func.HttpResponse:
+@app.route(route="health", auth_level=func.AuthLevel.ANONYMOUS)
+def get_health_status(req: func.HttpRequest) -> func.HttpResponse:
+    logging.warning(os.environ["CLIENT_ID"])
+    logging.warning(os.environ["TENANT_ID"])
+    logging.warning(os.environ["SUBSCRIPTION_ID"])
+    logging.warning(os.environ["RESOURCE_GROUP_NAME"])
+    logging.warning(os.environ["APP_SERVICE_PLAN_NAME"])
+    logging.warning(os.environ["STORAGE_ACCOUNT_NAME"])
+    logging.warning(os.environ["APP_INSIGHTS_NAME"])
+    logging.warning(os.environ["LOCATION"])
+    logging.warning(os.environ["COSMOS_DB_CONNECTION_STRING"])
     return func.HttpResponse(
-            "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.",
+            "Function app health status: Up and running!",
             status_code=200
     )
 
