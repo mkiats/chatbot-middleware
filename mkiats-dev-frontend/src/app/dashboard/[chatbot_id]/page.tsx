@@ -1,6 +1,7 @@
 'use client';
 
 import { ChatbotViewForm } from '@/components/dashboard/chatbotViewForm';
+import { Skeleton } from '@/components/ui/skeleton';
 import { getChatbotById, updateChatbotById } from '@/lib/api';
 import { Chatbot } from '@/lib/types/models';
 import {
@@ -10,6 +11,17 @@ import {
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
+function TableSkeleton() {
+	return (
+	  <div className="space-y-3">
+		{/* Table Rows Skeleton */}
+		{[1, 2, 3, 4, 5].map((index) => (
+			<Skeleton className="h-8 w-full" key={index} />
+		))}
+	  </div>
+	);
+  }
+  
 const DashboardDetails = () => {
 	const params = useParams();
 	const chatbot_id = params.chatbot_id;
@@ -69,7 +81,7 @@ const DashboardDetails = () => {
 	};
 
 	if (isLoading) {
-		return <div>Loading...</div>;
+		return <TableSkeleton/>
 	}
 
 	if (error) {

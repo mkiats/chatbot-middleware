@@ -9,6 +9,7 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+import { RefreshCcwIcon } from 'lucide-react';
 import * as React from 'react';
 
 import {
@@ -36,11 +37,13 @@ import {
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
 	data: TData[];
+	refreshHandler: () => Promise<void>;
 }
 
 export function DataTable<TData, TValue>({
 	columns,
 	data,
+	refreshHandler
 }: DataTableProps<TData, TValue>) {
 	const [sorting, setSorting] = React.useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] =
@@ -111,6 +114,13 @@ export function DataTable<TData, TValue>({
 							})}
 					</DropdownMenuContent>
 				</DropdownMenu>
+				<Button
+					className='bg-secondary hover:bg-accent group'
+					onClick={() => refreshHandler()}
+				>
+					<RefreshCcwIcon className='group-hover:text-accent-foreground'/>
+				</Button>
+
 			</div>
 			<div className='rounded-md border'>
 				<Table>

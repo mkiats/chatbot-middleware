@@ -24,11 +24,18 @@ import { Chatbot } from './types/models';
 import { request } from 'http';
 
 // const DOMAIN_URL = process.env.NEXT_PUBLIC_LOCAL_DOMAIN
-const DOMAIN_URL = process.env.NEXT_PUBLIC_AZURE_DOMAIN;
+// const DOMAIN_URL = process.env.NEXT_PUBLIC_AZURE_DOMAIN;
+
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_AZURE_BACKEND_DOMAIN;
+const DEPLOYMENT_URL = process.env.NEXT_PUBLIC_AZURE_DEPLOYMENT_DOMAIN;
+const TELEGRAM_URL = process.env.NEXT_PUBLIC_AZURE_TELEGRAM_DOMAIN;
+const TERRAFORM_URL = process.env.NEXT_PUBLIC_AZURE_TERRAFORM_DOMAIN;
 
 export async function getAllChatbots(): Promise<GetAllChatbotsResponse> {
 	try {
-		const response = await fetch(`${DOMAIN_URL}/api/chatbots`);
+		console.log(`${BACKEND_URL}/api/chatbots`)
+		const response = await fetch(`${BACKEND_URL}/api/chatbots`);
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
 		}
@@ -47,7 +54,7 @@ export async function getChatbotsByDeveloperId(
 ): Promise<GetChatbotsByDeveloperIdResponse> {
 	try {
 		// TODO: Add developer Id Filter
-		const response = await fetch(`${DOMAIN_URL}/api/chatbots`);
+		const response = await fetch(`${BACKEND_URL}/api/chatbots`);
 
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
@@ -71,7 +78,7 @@ export async function getChatbotById(
 		});
 
 		const response = await fetch(
-			`${DOMAIN_URL}/api/chatbots?${queryParams.toString()}`,
+			`${BACKEND_URL}/api/chatbots?${queryParams.toString()}`,
 		);
 
 		if (!response.ok) {
@@ -102,11 +109,11 @@ export async function updateChatbotById(
 			chatbot_telegram_support: requestObject.chatbot_telegram_support
 		};
 		console.log(
-			`${DOMAIN_URL}/api/chatbots/update?${queryParams.toString()}`,
+			`${BACKEND_URL}/api/chatbots/update?${queryParams.toString()}`,
 		);
 		console.log(JSON.stringify(queryBody))
 		const response = await fetch(
-			`${DOMAIN_URL}/api/chatbots/update?${queryParams.toString()}`,
+			`${BACKEND_URL}/api/chatbots/update?${queryParams.toString()}`,
 			{
 				method: 'POST',
 				body: JSON.stringify(queryBody),
@@ -136,7 +143,7 @@ export async function validateDeployment(
 		}
 
 		const { document, ...deploymentParams } = chatbotFormData;
-		console.log(DOMAIN_URL);
+		console.log(DEPLOYMENT_URL);
 
 		// Append all other fields under 'deployment_parameter'
 		requestFormData.append(
@@ -175,7 +182,7 @@ export async function deployInfrastructure(
 		const chatbotFormData = requestObject.chatbotFormData;
 		const { document, ...deploymentParams } = chatbotFormData;
 
-		console.log(`${DOMAIN_URL}/api/chatbots/deploy/infrastructure`)
+		console.log(`${TERRAFORM_URL}/api/chatbots/deploy/infrastructure`)
 		let newUrl: string = "https://mkiats-dev-terraform.victoriousriver-374dbb10.southeastasia.azurecontainerapps.io/deploy/infrastructure"
 		// let newUrl: string = "http://0.0.0.0:8000/deploy/infrastructure"
 		// const response = await fetch(`${DOMAIN_URL}/api/chatbots/deploy/infrastructure`, {
@@ -219,7 +226,7 @@ export async function deployApplication(
 			'deployment_parameter',
 			JSON.stringify(deploymentParams),
 		);
-		let newUrl = "https://mkiats-dev-deployment.azurewebsites.net/api/chatbots/deploy/application"
+		let newUrl = `${DEPLOYMENT_URL}/api/chatbots/deploy/application`
 		const response = await fetch(`${newUrl}`, {
 			method: 'POST',
 			body: requestFormData,
@@ -250,7 +257,7 @@ export async function activateChatbotById(
 			chatbot_id: requestObject.chatbot_id,
 		});
 		const response = await fetch(
-			`${DOMAIN_URL}/api/chatbots/activate?${queryParams.toString()}`,
+			`${BACKEND_URL}/api/chatbots/activate?${queryParams.toString()}`,
 		);
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);
@@ -272,7 +279,7 @@ export async function deactivateChatbotById(
 		});
 
 		const response = await fetch(
-			`${DOMAIN_URL}/api/chatbots/deactivate?${queryParams.toString()}`,
+			`${BACKEND_URL}/api/chatbots/deactivate?${queryParams.toString()}`,
 		);
 
 		if (!response.ok) {
