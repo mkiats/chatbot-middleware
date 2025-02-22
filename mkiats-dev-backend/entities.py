@@ -27,7 +27,7 @@ class UserRole(Enum):
 class User:
     def __init__(
         self,
-        id: None,
+        id: str = None,
         full_name: Optional[str] = None,
         email: Optional[str] = None,
         password: Optional[str] = None,

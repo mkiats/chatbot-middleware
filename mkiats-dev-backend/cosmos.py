@@ -18,6 +18,10 @@ class CosmosDB:
             id="users",
             partition_key=PartitionKey(path="/partition")
         )
+        self._developer_container = user_db.create_container_if_not_exists(
+            id="developers",
+            partition_key=PartitionKey(path="/partition")
+        )
         self._chatbot_container = chatbot_db.create_container_if_not_exists(
             id="chatbots", 
             partition_key=PartitionKey(path="/developer_id")
@@ -30,6 +34,10 @@ class CosmosDB:
     @property 
     def chatbot_container(self) -> ContainerProxy:
         return self._chatbot_container
+
+    @property 
+    def developer_container(self) -> ContainerProxy:
+        return self._developer_container
 
 
 async def query_by_key(container: ContainerProxy, key: str, val: str) -> List[Dict[str, Any]]:

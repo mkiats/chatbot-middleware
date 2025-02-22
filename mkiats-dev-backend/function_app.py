@@ -21,6 +21,19 @@ def get_health_status(req: func.HttpRequest) -> func.HttpResponse:
             status_code=200
     )
 
+@app.route(route="addDummyUser", auth_level=func.AuthLevel.ANONYMOUS)
+async def addDummyUser(req: func.HttpRequest) -> func.HttpResponse:
+    logging.warning('Python HTTP trigger function processed a request.')
+    theClient = BackendClient()
+    return await theClient.addDummyUser()
+
+
+@app.route(route="login", auth_level=func.AuthLevel.ANONYMOUS)
+async def login(req: func.HttpRequest) -> func.HttpResponse:
+    logging.warning('Python HTTP trigger function processed a request.')
+    theClient = BackendClient()
+    return await theClient.login(req)
+
 @app.route(route="chatbots/search", auth_level=func.AuthLevel.ANONYMOUS)
 async def search_chatbots(req: func.HttpRequest) -> func.HttpResponse:
     logging.warning('Python HTTP trigger function processed a request.')

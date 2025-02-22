@@ -2,8 +2,9 @@ import logging
 from typing import Tuple
 from azure.cosmos import ContainerProxy
 from azure.functions import HttpResponse, HttpRequest
+import bcrypt
 from cosmos import CosmosDB, query_by_key, query_by_sql
-from entities import Chatbot, ChatbotStatus
+from entities import Chatbot, ChatbotStatus, User, UserRole
 from exceptions import BackendException, BackendExceptionCode
 import json
 
@@ -41,14 +42,25 @@ class BackendClient:
         try:
             db = CosmosDB()
             await db.initialize()
-            dev_id = req.params.get("developer_id", "")
-            chatbot_id = req.params.get("chatbot_id", "")
+            dev_id: str = req.params.get("developer_id", "")
+            chatbot_id: str = req.params.get("chatbot_id", "")
 
             if len(req.params) == 0:
                 query = "SELECT * FROM c"
                 chatbots_result = await query_by_sql(container=db.chatbot_container, queryStr=query)
             elif dev_id:
-                chatbots_result = await query_by_key(container=db.chatbot_container, key="developer_id", val=str(dev_id))
+                query_result = await query_by_key(db.developer_container, key="id", val=dev_id)
+                the_user = query_result[0]
+                logging.warning(json.dumps(the_user))
+
+                if the_user.get("role") == UserRole.ADMIN.value:
+                    query = "SELECT * FROM c"
+                    chatbots_result = await query_by_sql(container=db.chatbot_container, queryStr=query)
+                elif the_user.get("role") == UserRole.DEVELOPER.value:
+                    chatbots_result = await query_by_key(container=db.chatbot_container, key="developer_id", val=str(dev_id))
+                else:
+                    chatbots_result = []
+
             elif chatbot_id:
                 chatbots_result = await query_by_key(container=db.chatbot_container, key="id", val=str(chatbot_id))
             else:
@@ -213,3 +225,65 @@ class BackendClient:
                     mimetype="text/plain",
                     status_code=500
                 )
+        
+    @staticmethod
+    async def addDummyUser() -> HttpResponse:
+        db = CosmosDB()
+        await db.initialize()
+        newDeveloperUser: User = User(id=None, full_name="Elunify Developer", email="developer@email.com", password="password", role=UserRole.DEVELOPER, selected_chatbot_id=None)
+        db._developer_container.upsert_item(body=newDeveloperUser.to_dict())
+        newAdminUser: User = User(id=None, full_name="Elunify Admin", email="admin@email.com", password="password", role=UserRole.ADMIN, selected_chatbot_id=None)
+        db._developer_container.upsert_item(body=newAdminUser.to_dict())
+        return HttpResponse(
+        "Admin and developer dummy added",
+        status_code=200
+    )
+
+    @staticmethod
+    async def login(req: HttpRequest) -> HttpResponse:
+        logging.warning("Logging in")
+        try: 
+            logging.warning(json.dumps(req.get_json()))
+            email = req.get_json().get("email", "")
+            password: str = req.get_json().get("password", "")
+            logging.warning(email)
+
+            db = CosmosDB()
+            await db.initialize()
+            
+            if not email or not password:
+                return HttpResponse(
+                    "Login failed, Invalid email or password",
+                    status_code=500
+                )
+            
+            query_result = await query_by_key(db.developer_container, key="email", val=email)
+            the_user = query_result[0]
+            logging.warning(json.dumps(the_user))
+
+
+
+            if bcrypt.checkpw(password.encode('utf-8'),the_user.get("password_hash").encode('utf-8')):
+                return HttpResponse(
+                    body = json.dumps({
+                        "developer_id": f'{the_user.get("id")}',
+                        "name": f'{the_user.get("full_name")}' 
+                        }),
+                    mimetype="application/json",
+                    status_code=200
+                )
+            else:
+                return HttpResponse(
+                    "Login failed, Invalid email or password",
+                    status_code=500
+                )        
+        except:
+            return HttpResponse(
+                "Login unsuccessful",
+                status_code=500
+            )
+
+
+
+
+
