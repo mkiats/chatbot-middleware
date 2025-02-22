@@ -208,11 +208,15 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 							alphanumeric characters only!
 						</FormDescription>
 						<FormDescription>
-							✅ mkiats-chatbot | mkiats-chatbot-123
+							<p className='text-green-600'>
+								✓ Valid: mkiats-chatbot | mkiats-chatbot-123
+							</p>
 						</FormDescription>
 						<FormDescription>
-							❌ mkiats chatbot | mkiats_chatbot |
-							mkiats,./;'chatbot
+							<p className='text-red-600'>
+								✗ Invalid: mkiats chatbot | mkiats_chatbot |
+								mkiats,./;'chatbot
+							</p>
 						</FormDescription>
 						<FormMessage />
 					</FormItem>
@@ -232,9 +236,15 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 							Current semantic version of your chatbot. Use for
 							version tracking of chatbot releases.
 						</FormDescription>
-						<FormDescription>✅ 1.0.0 | 1.10.2</FormDescription>
 						<FormDescription>
-							❌ 1.2.3.4 | 12a.34b.56c
+							<p className='text-green-600'>
+								✓ Valid: 1.0.0 | 1.10.2
+							</p>
+						</FormDescription>
+						<FormDescription>
+							<p className='text-red-600'>
+								✗ Invalid: 1.2.3.4 | 12a.34b.56c
+							</p>
 						</FormDescription>
 						<FormMessage />
 					</FormItem>
@@ -458,11 +468,15 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 								within your resource group in azure portal
 							</FormDescription>
 							<FormDescription>
-								✅ mkiats-azure-resources
+								<p className='text-green-600'>
+									✓ Valid: mkiats-azure-resources
+								</p>
 							</FormDescription>
 							<FormDescription>
-								❌ mkiats azure resources |
-								mkiats_azure_resources
+								<p className='text-red-600'>
+									✗ Invalid: mkiats azure resources |
+									mkiats_azure_resources
+								</p>
 							</FormDescription>
 							<FormMessage />
 						</FormItem>
@@ -488,11 +502,15 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 								within the resource group!
 							</FormDescription>
 							<FormDescription>
-								✅ mkiats-azure-resources
+								<p className='text-green-600'>
+									✓ Valid: mkiats-azure-resources
+								</p>
 							</FormDescription>
 							<FormDescription>
-								❌ mkiats azure resources |
-								mkiats_azure_resources
+								<p className='text-red-600'>
+									✗ Invalid: mkiats azure resources |
+									mkiats_azure_resources
+								</p>
 							</FormDescription>
 							<FormMessage />
 						</FormItem>
@@ -518,11 +536,16 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 								group!
 							</FormDescription>
 							<FormDescription>
-								✅ mkiats1azure2resources
+								<p className='text-green-600'>
+									✓ Valid: mkiats1azure2resources
+								</p>
 							</FormDescription>
 							<FormDescription>
-								❌ mkiats azure resources |
-								mkiats_azure_resources | mkiats-azure-resources
+								<p className='text-red-600'>
+									✗ Invalid: mkiats azure resources |
+									mkiats_azure_resources |
+									mkiats-azure-resources
+								</p>
 							</FormDescription>
 							<FormMessage />
 						</FormItem>
