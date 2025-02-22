@@ -2,7 +2,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 import {
 	Form,
 	FormControl,
@@ -22,7 +22,8 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
+import { useAuth } from '@/lib/contexts/AuthContext';
+import { CircleCheckIcon, CircleXIcon } from 'lucide-react';
 // First, let's define the ChatbotStatus enum
 export const ChatbotStatusEnum = z.enum(['inactive', 'active', 'debug']);
 // export const DeploymentTypeEnum = z.enum(['managed', 'custom']);
@@ -58,10 +59,11 @@ const FileSchema = z.custom<File>(
 
 // Base schema with common fields
 const ChatbotBaseSchema = z.object({
-	name: z.string().max(40)
-    .regex(/^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/)
-    .transform(str => str.replace(/\s+/g, '-'))
-    .default('placeholder_name'),
+	name: z
+		.string()
+		.max(40)
+		.regex(/^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/)
+		.default('placeholder_name'),
 	version: z.string().default('1.0.0'),
 	description: z.string().max(250).default(''),
 	status: ChatbotStatusEnum.default('active'),
@@ -82,40 +84,58 @@ const deploymentDescriptions = {
 // Managed deployment type schema
 const ManagedDeploymentSchema = ChatbotBaseSchema.extend({
 	deployment_type: z.literal('managed'),
-	resource_group_name: z.string().max(100).optional(), // Optional for managed
-	location: z.string().max(100).default('southeastasia'),
-	subscription_id: z.string().max(100).optional(),
-	app_insights_name: z.string().max(100).optional(),
-	storage_account_name: z.string().max(100).optional(),
-	client_id: z.string().max(100).optional(),
-	client_secret: z.string().max(100).optional(),
-	tenant_id: z.string().max(100).optional(),
+	resource_group_name: z.string().max(63).optional(), // Optional for managed
+	location: z.string().max(63).default('southeastasia'),
+	subscription_id: z.string().max(63).optional(),
+	app_insights_name: z.string().max(63).optional(),
+	storage_account_name: z.string().max(63).optional(),
+	client_id: z.string().max(63).optional(),
+	client_secret: z.string().max(63).optional(),
+	tenant_id: z.string().max(63).optional(),
 });
 
 // Custom deployment type schema
 const CustomDeploymentSchema = ChatbotBaseSchema.extend({
 	deployment_type: z.literal('custom'),
-	resource_group_name: z.string().max(100),
-	location: z.string().max(100).default('southeastasia'),
-	subscription_id: z.string().max(100),
-	app_insights_name: z.string().max(100),
-	storage_account_name: z.string().max(100),
-	client_id: z.string().max(100),
-	client_secret: z.string().max(100),
-	tenant_id: z.string().max(100),
+	resource_group_name: z
+		.string()
+		.max(63)
+		.regex(/^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/),
+	location: z.string().max(63).default('southeastasia'),
+	subscription_id: z.string().max(63),
+	app_insights_name: z
+		.string()
+		.max(63)
+		.regex(/^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/),
+	storage_account_name: z
+		.string()
+		.max(63)
+		.regex(/^[a-zA-Z0-9]+$/),
+	client_id: z.string().max(63),
+	client_secret: z.string().max(63),
+	tenant_id: z.string().max(63),
 });
 
 // Terraform deployment type schema
 const TerraformDeploymentSchema = ChatbotBaseSchema.extend({
 	deployment_type: z.literal('terraform'),
-	subscription_id: z.string().optional(),
-	location: z.string().default('southeastasia'),
-	resource_group_name: z.string().optional(),
-	app_insights_name: z.string().optional(),
-	storage_account_name: z.string().optional(),
-	client_id: z.string(),
-	client_secret: z.string(),
-	tenant_id: z.string(),
+	subscription_id: z.string().max(63),
+	location: z.string().max(63).default('southeastasia'),
+	resource_group_name: z
+		.string()
+		.max(63)
+		.regex(/^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/),
+	app_insights_name: z
+		.string()
+		.max(63)
+		.regex(/^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$/),
+	storage_account_name: z
+		.string()
+		.max(63)
+		.regex(/^[a-zA-Z0-9]+$/),
+	client_id: z.string().max(63),
+	client_secret: z.string().max(63),
+	tenant_id: z.string().max(63),
 });
 
 // Combined schema using discriminated union
@@ -129,9 +149,7 @@ const ChatbotSchema = z.discriminatedUnion('deployment_type', [
 export type ChatbotFormData = z.infer<typeof ChatbotSchema>;
 
 interface ChatbotCreationFormProps {
-	// The callback function when terms are accepted
 	onSubmit: (data: ChatbotFormData) => void;
-	// Optional props for customization
 	className?: string;
 	buttonText?: string;
 	title?: string;
@@ -143,6 +161,8 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 	buttonText = 'Submit',
 	title = 'Chatbot details',
 }) => {
+	const { developerUuid } = useAuth();
+
 	// 1. Define your form.
 	const form = useForm<z.infer<typeof ChatbotSchema>>({
 		resolver: zodResolver(ChatbotSchema),
@@ -151,18 +171,18 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 			version: '1.0.0',
 			description: 'Placeholder description',
 			status: 'active',
-			developer_id: '257750825',
+			developer_id: developerUuid!,
 			telegram_support: true,
 			document: undefined,
-			deployment_type: 'managed', // Default to managed type
-			subscription_id: process.env.NEXT_PUBLIC_subscription_id,
+			deployment_type: 'managed',
+			subscription_id: undefined,
 			location: 'southeastasia',
-			resource_group_name: 'terraform-chatbot-deployment',
-			app_insights_name: 'terraform-chatbot-deployment',
-			storage_account_name: process.env.NEXT_PUBLIC_storage_account_name,
-			client_id: process.env.NEXT_PUBLIC_client_id,
-			client_secret: process.env.NEXT_PUBLIC_client_secret,
-			tenant_id: process.env.NEXT_PUBLIC_tenant_id,
+			resource_group_name: undefined,
+			app_insights_name: undefined,
+			storage_account_name: undefined,
+			client_id: undefined,
+			client_secret: undefined,
+			tenant_id: undefined,
 		},
 	});
 
@@ -184,8 +204,15 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 							/>
 						</FormControl>
 						<FormDescription>
-							Choose a unique name for your chatbot, Only use
-							AlphaNumeric characters and '-' for spaces! This wil be the displayed name within the dashboard and telegram.
+							This will be the name of your Chatbot. Use
+							alphanumeric characters only!
+						</FormDescription>
+						<FormDescription>
+							✅ mkiats-chatbot | mkiats-chatbot-123
+						</FormDescription>
+						<FormDescription>
+							❌ mkiats chatbot | mkiats_chatbot |
+							mkiats,./;'chatbot
 						</FormDescription>
 						<FormMessage />
 					</FormItem>
@@ -202,7 +229,12 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 							<Input placeholder='1.0.0' {...field} />
 						</FormControl>
 						<FormDescription>
-							Current semantic version of your chatbot. Use for version tracking of chatbot releases.
+							Current semantic version of your chatbot. Use for
+							version tracking of chatbot releases.
+						</FormDescription>
+						<FormDescription>✅ 1.0.0 | 1.10.2</FormDescription>
+						<FormDescription>
+							❌ 1.2.3.4 | 12a.34b.56c
 						</FormDescription>
 						<FormMessage />
 					</FormItem>
@@ -222,8 +254,10 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 							/>
 						</FormControl>
 						<FormDescription>
-								Enter a short description for other developers to understand your chatbot functionalities.
-							</FormDescription>
+							Enter a short description for other developers to
+							understand your chatbot functionalities.
+						</FormDescription>
+
 						<FormMessage />
 					</FormItem>
 				)}
@@ -245,7 +279,10 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 								</SelectTrigger>
 							</FormControl>
 							<FormDescription>
-								Initial status of your deployed chatbot. Set to inactive if you wish to deploy your chatbot without enabling other users to query your chatbot.
+								Initial status of your deployed chatbot. Set to
+								inactive if you wish to deploy your chatbot
+								without enabling other users to query your
+								chatbot.
 							</FormDescription>
 							<SelectContent>
 								{ChatbotStatusEnum.options.map((status) => (
@@ -270,6 +307,7 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 							<Input
 								placeholder='Input your developer Id'
 								{...field}
+								disabled
 							/>
 						</FormControl>
 						<FormMessage />
@@ -287,7 +325,8 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 								Telegram Support
 							</FormLabel>
 							<FormDescription>
-								Enable Telegram integration for your chatbot to be displayed within the Telegram chatbot
+								Enable Telegram integration for your chatbot to
+								be displayed within the Telegram chatbot
 							</FormDescription>
 						</div>
 						<FormControl>
@@ -346,14 +385,15 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 								</SelectTrigger>
 							</FormControl>
 							<FormDescription>
-								managed (Recommended): Use this deployment method if you are new to azure or do not wish to create any azure resources
+								Managed (Recommended): Use this deployment
+								method if you are new to azure!
 							</FormDescription>
 							<FormDescription>
-								custom: Use this deployment method if you have already created Azure resources and service principal
-								resources,
+								Custom: Azure function deployment only
 							</FormDescription>
 							<FormDescription>
-								terraform (Not Available): Use this deployment method if you have yet to create azure resources, and wish to have custom configurations for your azure resources
+								Terraform : Automatic azure resource creation +
+								deployment
 							</FormDescription>
 							<SelectContent>
 								{DeploymentTypeEnum.options.map((type) => (
@@ -393,8 +433,10 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 								/>
 							</FormControl>
 							<FormDescription>
-								Subscription Id can be found within the subscriptions tab within your azure portal
+								Subscription Id can be found within the
+								subscriptions tab within your azure portal
 							</FormDescription>
+
 							<FormMessage />
 						</FormItem>
 					)}
@@ -412,7 +454,15 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 								/>
 							</FormControl>
 							<FormDescription>
-								Resource group name can be found within JsonView within your resource group in azure portal
+								Resource group name can be found within JsonView
+								within your resource group in azure portal
+							</FormDescription>
+							<FormDescription>
+								✅ mkiats-azure-resources
+							</FormDescription>
+							<FormDescription>
+								❌ mkiats azure resources |
+								mkiats_azure_resources
 							</FormDescription>
 							<FormMessage />
 						</FormItem>
@@ -432,7 +482,17 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 								/>
 							</FormControl>
 							<FormDescription>
-								Application insights can be found within JsonView within your application insights resource in azure portal. Ensure it is created within the resource group!
+								Application insights can be found within
+								JsonView within your application insights
+								resource in azure portal. Ensure it is created
+								within the resource group!
+							</FormDescription>
+							<FormDescription>
+								✅ mkiats-azure-resources
+							</FormDescription>
+							<FormDescription>
+								❌ mkiats azure resources |
+								mkiats_azure_resources
 							</FormDescription>
 							<FormMessage />
 						</FormItem>
@@ -452,7 +512,17 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 								/>
 							</FormControl>
 							<FormDescription>
-								Storage account can be found within JsonView within your storage account resource in azure portal. Ensure it is created within the resource group!
+								Storage account can be found within JsonView
+								within your storage account resource in azure
+								portal. Ensure it is created within the resource
+								group!
+							</FormDescription>
+							<FormDescription>
+								✅ mkiats1azure2resources
+							</FormDescription>
+							<FormDescription>
+								❌ mkiats azure resources |
+								mkiats_azure_resources | mkiats-azure-resources
 							</FormDescription>
 							<FormMessage />
 						</FormItem>
@@ -472,7 +542,9 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 								/>
 							</FormControl>
 							<FormDescription>
-								Client Id, or AppId, is generated during Service principal creation. Ensure service principal scope is set to your resource group
+								Client Id/AppId is generated during Service
+								principal creation. Ensure service principal
+								scope is set to your resource group
 							</FormDescription>
 							<FormMessage />
 						</FormItem>
@@ -492,7 +564,9 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 								/>
 							</FormControl>
 							<FormDescription>
-								Client Secret, or password, is generated during Service principal creation. Do safeguard this from external parties.
+								Client Secret/password is generated during
+								Service principal creation. Do safeguard this
+								from external parties.
 							</FormDescription>
 							<FormMessage />
 						</FormItem>
@@ -512,7 +586,8 @@ export const ChatbotCreationForm: React.FC<ChatbotCreationFormProps> = ({
 								/>
 							</FormControl>
 							<FormDescription>
-								Tenant Id, or Tenant, is generated during Service principal creation.
+								Tenant Id is generated during Service principal
+								creation.
 							</FormDescription>
 							<FormMessage />
 						</FormItem>

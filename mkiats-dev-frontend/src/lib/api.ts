@@ -27,8 +27,8 @@ import { request } from 'http';
 // const DOMAIN_URL = process.env.NEXT_PUBLIC_AZURE_DOMAIN;
 
 
-// const BACKEND_URL = process.env.NEXT_PUBLIC_AZURE_BACKEND_DOMAIN;
-const BACKEND_URL = "http://localhost:7071";
+const BACKEND_URL = process.env.NEXT_PUBLIC_AZURE_BACKEND_DOMAIN;
+// const BACKEND_URL = "http://localhost:7071";
 const DEPLOYMENT_URL = process.env.NEXT_PUBLIC_AZURE_DEPLOYMENT_DOMAIN;
 const TELEGRAM_URL = process.env.NEXT_PUBLIC_AZURE_TELEGRAM_DOMAIN;
 const TERRAFORM_URL = process.env.NEXT_PUBLIC_AZURE_TERRAFORM_DOMAIN;
