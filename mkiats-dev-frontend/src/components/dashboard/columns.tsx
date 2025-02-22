@@ -13,7 +13,10 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Chatbot } from '@/lib/types/models';
-import { ActivateChatbotByIdRequest, DeactivateChatbotByIdRequest } from '@/lib/types/requests';
+import {
+	ActivateChatbotByIdRequest,
+	DeactivateChatbotByIdRequest,
+} from '@/lib/types/requests';
 import { activateChatbotById, deactivateChatbotById } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 
@@ -116,23 +119,31 @@ export const columns: ColumnDef<Chatbot>[] = [
 			const chatbot = row.original;
 			const router = useRouter();
 
-            const handleActivate = async (e: React.MouseEvent<HTMLDivElement>) => {
-                e.preventDefault();
-                const activateChatbotRequest: ActivateChatbotByIdRequest = {
-					chatbot_id: chatbot.id  // Accessing the id from the row data
-                };
-                const response = await activateChatbotById(activateChatbotRequest);
-                window.location.reload();
-            };
+			const handleActivate = async (
+				e: React.MouseEvent<HTMLDivElement>,
+			) => {
+				e.preventDefault();
+				const activateChatbotRequest: ActivateChatbotByIdRequest = {
+					chatbot_id: chatbot.id, // Accessing the id from the row data
+				};
+				const response = await activateChatbotById(
+					activateChatbotRequest,
+				);
+				window.location.reload();
+			};
 
-            const handleDeactivate = async (e: React.MouseEvent<HTMLDivElement>) => {
-                e.preventDefault();
-                const deactivateChatbotRequest: DeactivateChatbotByIdRequest = {
-                    chatbot_id: chatbot.id  // Accessing the id from the row data
-                };
-                const response = await deactivateChatbotById(deactivateChatbotRequest);
-                window.location.reload();
-            };
+			const handleDeactivate = async (
+				e: React.MouseEvent<HTMLDivElement>,
+			) => {
+				e.preventDefault();
+				const deactivateChatbotRequest: DeactivateChatbotByIdRequest = {
+					chatbot_id: chatbot.id, // Accessing the id from the row data
+				};
+				const response = await deactivateChatbotById(
+					deactivateChatbotRequest,
+				);
+				window.location.reload();
+			};
 
 			return (
 				<DropdownMenu>
@@ -152,9 +163,20 @@ export const columns: ColumnDef<Chatbot>[] = [
 							Copy chatbot endpoint
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem className='text-primary' onClick={() => {router.push(`/dashboard/${chatbot.id}`)}} >View chatbot details</DropdownMenuItem>
-						<DropdownMenuItem onClick={handleActivate} >Set active</DropdownMenuItem>
-						<DropdownMenuItem onClick={handleDeactivate}>Set inactive</DropdownMenuItem>
+						<DropdownMenuItem
+							className='text-primary'
+							onClick={() => {
+								router.push(`/dashboard/${chatbot.id}`);
+							}}
+						>
+							View chatbot details
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={handleActivate}>
+							Set active
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={handleDeactivate}>
+							Set inactive
+						</DropdownMenuItem>
 						<DropdownMenuItem>Terminate instance</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>

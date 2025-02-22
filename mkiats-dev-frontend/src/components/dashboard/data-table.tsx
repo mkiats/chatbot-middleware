@@ -115,10 +115,10 @@ export function DataTable<TData, TValue>({
 					</DropdownMenuContent>
 				</DropdownMenu>
 				<Button
-					className='bg-secondary hover:bg-accent group'
+					className='bg-secondary text-secondary-foreground hover:bg-accent group'
 					onClick={() => refreshHandler()}
 				>
-					<RefreshCcwIcon className='group-hover:text-accent-foreground'/>
+					<RefreshCcwIcon className='text-secondary-foreground group-hover:text-accent-foreground'/>
 				</Button>
 
 			</div>

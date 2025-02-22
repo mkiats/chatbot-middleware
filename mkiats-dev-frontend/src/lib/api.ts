@@ -7,7 +7,7 @@ import {
 	GetChatbotByIdRequest,
 	GetChatbotsByDeveloperIdRequest,
 	UpdateChatbotByIdRequest,
-} from './types/requests';
+} from '@/lib/types/requests';
 import {
 	ActivateChatbotByIdResponse,
 	DeactivateChatbotByIdResponse,
@@ -19,15 +19,16 @@ import {
 	GetChatbotsByDeveloperIdResponse,
 	UpdateChatbotByIdResponse,
 	ValidateDeploymentResponse,
-} from './types/responses';
-import { Chatbot } from './types/models';
+} from '@/lib/types/responses';
+import { Chatbot } from '@/lib/types/models';
 import { request } from 'http';
 
 // const DOMAIN_URL = process.env.NEXT_PUBLIC_LOCAL_DOMAIN
 // const DOMAIN_URL = process.env.NEXT_PUBLIC_AZURE_DOMAIN;
 
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_AZURE_BACKEND_DOMAIN;
+// const BACKEND_URL = process.env.NEXT_PUBLIC_AZURE_BACKEND_DOMAIN;
+const BACKEND_URL = "http://localhost:7071";
 const DEPLOYMENT_URL = process.env.NEXT_PUBLIC_AZURE_DEPLOYMENT_DOMAIN;
 const TELEGRAM_URL = process.env.NEXT_PUBLIC_AZURE_TELEGRAM_DOMAIN;
 const TERRAFORM_URL = process.env.NEXT_PUBLIC_AZURE_TERRAFORM_DOMAIN;
@@ -53,8 +54,12 @@ export async function getChatbotsByDeveloperId(
 	requestObject: GetChatbotsByDeveloperIdRequest,
 ): Promise<GetChatbotsByDeveloperIdResponse> {
 	try {
-		// TODO: Add developer Id Filter
-		const response = await fetch(`${BACKEND_URL}/api/chatbots`);
+		const queryParams = new URLSearchParams({
+			developer_id: requestObject.developer_id,
+		});
+		const response = await fetch(
+			`${BACKEND_URL}/api/chatbots?${queryParams.toString()}`,
+		);
 
 		if (!response.ok) {
 			throw new Error(`HTTP error! status: ${response.status}`);

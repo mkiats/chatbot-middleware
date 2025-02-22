@@ -40,12 +40,12 @@ const DeploymentPage: React.FC = () => {
 
 		try {
 			const deployChatbotRequest: DeployChatbotRequest = {
-				chatbotFormData: formData
+				chatbotFormData: formData,
 			};
 
 			// Step 1 of deplopyment: Validation
 			const deploymentType = formData.deployment_type;
-			let deploymentMessage = "Validating chatbot details";
+			let deploymentMessage = 'Validating chatbot details';
 
 			setDeploymentMessages((prev) => [
 				...prev,
@@ -55,21 +55,42 @@ const DeploymentPage: React.FC = () => {
 				},
 			]);
 			await validateDeployment(deployChatbotRequest);
-			
-			if (deploymentType==="terraform")
-				{// Step 2 of deployment: Infrastructure
-			deploymentMessage = "Initialising infrastructure"
-			setDeploymentMessages((prev) => [
-				...prev,
-				{
-					message: deploymentMessage,
-					status: 'pending',
-				},
-			]);
-			await deployInfrastructure(deployChatbotRequest);}
-			
+			setDeploymentMessages(prevMessages => {
+				if (prevMessages.length === 0) return prevMessages;
+				const updatedMessages = [...prevMessages];
+				const lastIndex = updatedMessages.length - 1;
+				updatedMessages[lastIndex] = {
+				  ...updatedMessages[lastIndex],
+				  status: 'success'
+				};
+				return updatedMessages;
+			  });
+
+			if (deploymentType === 'terraform') {
+				// Step 2 of deployment: Infrastructure
+				deploymentMessage = 'Initialising infrastructure';
+				setDeploymentMessages((prev) => [
+					...prev,
+					{
+						message: deploymentMessage,
+						status: 'pending',
+					},
+				]);
+				await deployInfrastructure(deployChatbotRequest);
+				setDeploymentMessages(prevMessages => {
+					if (prevMessages.length === 0) return prevMessages;
+					const updatedMessages = [...prevMessages];
+					const lastIndex = updatedMessages.length - 1;
+					updatedMessages[lastIndex] = {
+					  ...updatedMessages[lastIndex],
+					  status: 'success'
+					};
+					return updatedMessages;
+				  });
+			}
+
 			// Step 3 of deployment: Azure deployment
-			deploymentMessage = "Deploying to azure"
+			deploymentMessage = 'Deploying to azure';
 			setDeploymentMessages((prev) => [
 				...prev,
 				{
@@ -78,11 +99,20 @@ const DeploymentPage: React.FC = () => {
 				},
 			]);
 			const appResponse = await deployApplication(deployChatbotRequest);
+			setDeploymentMessages(prevMessages => {
+				if (prevMessages.length === 0) return prevMessages;
+				const updatedMessages = [...prevMessages];
+				const lastIndex = updatedMessages.length - 1;
+				updatedMessages[lastIndex] = {
+				  ...updatedMessages[lastIndex],
+				  status: 'success'
+				};
+				return updatedMessages;
+			  });
 
 			if (!appResponse.endpoint) {
 				throw new Error('Application deployment failed.');
 			}
-
 			setDeploymentDone(true);
 		} catch (error) {
 			// setHasError(true);
@@ -246,16 +276,16 @@ const DeploymentPage: React.FC = () => {
 								renderDeploymentMessage(msg, index),
 							)}
 						</div>
-						
-							{deploymentDone === true && (
-								<button
-									onClick={handleNewDeployment}
-									type='button'
-									className='w-3/4 p-8 bg-accent text-accent-foreground py-2 rounded border border-accent-foreground'
-								>
-									Deploy another chatbot
-								</button>
-							)}
+
+						{deploymentDone === true && (
+							<button
+								onClick={handleNewDeployment}
+								type='button'
+								className='w-3/4 p-8 bg-accent text-accent-foreground py-2 rounded border border-accent-foreground'
+							>
+								Deploy another chatbot
+							</button>
+						)}
 					</div>
 				)}
 			</div>

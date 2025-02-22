@@ -28,7 +28,7 @@ const Stepper: React.FC<StepperProps> = ({ currentStep, stepList }) => {
 							<div
 								className={`
                     w-6 h-6 rounded-full border
-                    ${isCompleted || isActive ? 'border-4 border-secondary bg-accent' : 'border-gray-300 bg-white'}
+                    ${isCompleted || isActive ? 'border-2 border-foreground bg-accent' : 'border-gray-400 bg-gray-100'}
                   `}
 							>
 								<span

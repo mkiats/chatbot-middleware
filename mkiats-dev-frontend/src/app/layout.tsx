@@ -1,25 +1,26 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
-import { ThemeProvider } from '@/components/commons/theme-provider';
-import Navbar from '@/components/commons/navbar';
-import { ModeToggle } from '@/components/commons/dark-mode-toggle';
-
-import { AppSidebar } from '@/components/app-sidebar';
-import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbList,
-	BreadcrumbPage,
-	BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb';
-import { Separator } from '@/components/ui/separator';
-import {
-	SidebarInset,
-	SidebarProvider,
-	SidebarTrigger,
-} from '@/components/ui/sidebar';
+// import { ThemeProvider } from '@/components/commons/theme-provider';
+// import { ModeToggle } from '@/components/commons/dark-mode-toggle';
+// import { CloudAlertIcon, LucideCloudUpload } from 'lucide-react';
+// import { AppSidebar } from '@/components/commons/app-sidebar';
+// import {
+// 	Breadcrumb,
+// 	BreadcrumbItem,
+// 	BreadcrumbLink,
+// 	BreadcrumbList,
+// 	BreadcrumbPage,
+// 	BreadcrumbSeparator,
+// } from '@/components/ui/breadcrumb';
+// import { Separator } from '@/components/ui/separator';
+// import {
+// 	SidebarInset,
+// 	SidebarProvider,
+// 	SidebarTrigger,
+// } from '@/components/ui/sidebar';
+// import { AuthProvider } from '@/lib/contexts/AuthContext';
+// import ProtectedLayout from '@/components/commons/protected-layout';
 
 require('dotenv').config();
 const geistSans = localFont({
@@ -34,7 +35,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-	title: 'Ez Deploy',
+	title: 'Elunify',
 	description:
 		'Interface built to streamline chatbot monitoring and deployment',
 };
@@ -49,53 +50,7 @@ export default function RootLayout({
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>
-				<ThemeProvider
-					attribute='class'
-					defaultTheme='light'
-					enableSystem
-					disableTransitionOnChange
-				>
-					<section className='w-screen h-screen'>
-						<SidebarProvider>
-							<AppSidebar />
-							<SidebarInset>
-								<header className='hidden w-full h-16 bg-transparent grid grid-cols-3 justify-center'>
-									{/* <div className='col-start-2 flex justify-center items-center gap-8 '>
-										<Navbar />
-									</div> */}
-								</header>
-								<header className='flex h-16 shrink-0 items-center gap-2 border-b px-4'>
-									<SidebarTrigger className='-ml-1' />
-									<Separator
-										orientation='vertical'
-										className='mr-2 h-4'
-									/>
-									{/* <Breadcrumb>
-										<BreadcrumbList>
-											<BreadcrumbItem className='hidden md:block'>
-												<BreadcrumbLink href='#'>
-													Building Your Application
-												</BreadcrumbLink>
-											</BreadcrumbItem>
-											<BreadcrumbSeparator className='hidden md:block' />
-											<BreadcrumbItem>
-												<BreadcrumbPage>
-													Data Fetching
-												</BreadcrumbPage>
-											</BreadcrumbItem>
-										</BreadcrumbList>
-									</Breadcrumb> */}
-									<div className='flex justify-self-end items-center pr-4'>
-										<ModeToggle />
-									</div>
-								</header>
-								<div className='w-full h-[calc(100vh-4rem)] flex-col gap-4 p-4'>
-									{children}
-								</div>
-							</SidebarInset>
-						</SidebarProvider>
-					</section>
-				</ThemeProvider>
+				{children}
 			</body>
 		</html>
 	);

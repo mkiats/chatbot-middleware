@@ -13,15 +13,15 @@ import { useEffect, useState } from 'react';
 
 function TableSkeleton() {
 	return (
-	  <div className="space-y-3">
-		{/* Table Rows Skeleton */}
-		{[1, 2, 3, 4, 5].map((index) => (
-			<Skeleton className="h-8 w-full" key={index} />
-		))}
-	  </div>
+		<div className='space-y-3'>
+			{/* Table Rows Skeleton */}
+			{[1, 2, 3, 4, 5].map((index) => (
+				<Skeleton className='h-8 w-full' key={index} />
+			))}
+		</div>
 	);
-  }
-  
+}
+
 const DashboardDetails = () => {
 	const params = useParams();
 	const chatbot_id = params.chatbot_id;
@@ -47,7 +47,11 @@ const DashboardDetails = () => {
 					}
 				}
 			} catch (err) {
-				setError(err instanceof Error ? err.message : 'Failed to fetch chatbot details');
+				setError(
+					err instanceof Error
+						? err.message
+						: 'Failed to fetch chatbot details',
+				);
 			} finally {
 				setIsLoading(false);
 			}
@@ -67,7 +71,7 @@ const DashboardDetails = () => {
 				chatbot_version: chatbotData.version,
 				chatbot_desc: chatbotData.description,
 				chatbot_status: chatbotData.status,
-				chatbot_telegram_support: chatbotData.telegram_support
+				chatbot_telegram_support: chatbotData.telegram_support,
 			};
 			await updateChatbotById(updateChatbotByIdRequest);
 			setIsEditing(false);
@@ -81,7 +85,7 @@ const DashboardDetails = () => {
 	};
 
 	if (isLoading) {
-		return <TableSkeleton/>
+		return <TableSkeleton />;
 	}
 
 	if (error) {
