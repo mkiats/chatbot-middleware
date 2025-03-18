@@ -4,6 +4,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Info } from 'lucide-react';
+import Image from 'next/image';
 
 interface DocSectionProps {
 	title: string;
@@ -20,6 +21,7 @@ interface FieldDocProps {
 	description: string;
 	examples?: FieldExamples;
 	notes?: string;
+	children?: React.ReactNode;
 }
 
 const DocSection: React.FC<DocSectionProps> = ({ title, children }) => (
@@ -34,6 +36,7 @@ const FieldDoc: React.FC<FieldDocProps> = ({
 	description,
 	examples = null,
 	notes = null,
+	children
 }) => (
 	<Card className='mb-4'>
 		<CardHeader>
@@ -66,6 +69,7 @@ const FieldDoc: React.FC<FieldDocProps> = ({
 				</Alert>
 			)}
 		</CardContent>
+		{children}
 	</Card>
 );
 
@@ -114,7 +118,17 @@ const ChatbotDocumentation: React.FC<ChatbotFormDocumentationProps> = ({
 						title='Document Upload'
 						description="Upload your chatbot's implementation files."
 						notes='Accept ZIP files only, maximum size 50MB.'
-					/>
+					>	
+					<div className='flex justify-center items-center rounded-md w-full h-full mb-8'>
+						<Image
+							src='/code-template.jpg'
+							width={500}
+      						height={500}
+							alt="Round image"
+  							className="rounded-xl"
+						/>
+					</div>
+					</FieldDoc>
 				</DocSection>
 
 				<DocSection title='Deployment Configuration'>

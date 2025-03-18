@@ -14,6 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_AZURE_BACKEND_DOMAIN;
+
 export default function LoginForm({
 	className,
 	...props
@@ -28,7 +30,7 @@ export default function LoginForm({
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		try {
-			const response = await fetch('http://localhost:7071/api/login', {
+			const response = await fetch(`${BACKEND_URL}/api/login`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ email, password }),

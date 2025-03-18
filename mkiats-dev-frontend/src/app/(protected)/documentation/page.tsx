@@ -18,7 +18,7 @@ const DocumentationPage: React.FC<ChatbotFormDocumentationProps> = ({
 	return (
 		<div className='flex w-full'>
 			<Tabs defaultValue='documentation' className='w-full flex flex-col mt-4 justify-center items-center'>
-				<TabsList className='w-1/4 h-12'>
+				<TabsList className='w-1/3 h-16'>
 					<TabsTrigger value='documentation' className='h-5/6'>Documentation</TabsTrigger>
 					<TabsTrigger value='deploymentWorkflow' className='h-5/6'>Deployment Workflow</TabsTrigger>
 				</TabsList>
